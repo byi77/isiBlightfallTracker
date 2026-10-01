@@ -6,6 +6,7 @@ manual-changelog:
 ignore:
   - .github
   - .gitignore
+  - .luarc.json
   - tests
   - media
   - CURSEFORGE.md

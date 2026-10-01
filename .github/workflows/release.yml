@@ -55,7 +55,7 @@ jobs:
           mkdir -p dist package/isiBlightfallTracker
           while IFS= read -r -d '' file; do
             case "${file}" in
-              .github/*|tests/*|media/*|.gitignore|.pkgmeta|CURSEFORGE.md|CHANGELOG.md|CHANGELOG_RELEASE.md)
+              .github/*|tests/*|media/*|.gitignore|.luarc.json|.pkgmeta|CURSEFORGE.md|CHANGELOG.md|CHANGELOG_RELEASE.md)
                 continue
                 ;;
             esac

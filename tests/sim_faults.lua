@@ -83,6 +83,7 @@ local function Advance(seconds)
   end
 end
 
+isiBlightfallTrackerDB = { logEnabled = true } -- the log is opt-in; these simulations read it
 Fire("PLAYER_LOGIN"); Fire("PLAYER_ENTERING_WORLD"); ns.Model.Evaluate = function() error("injected render fault") end; local realClass = UnitClass; UnitClass = function() error("injected event fault") end; for i = 1, 8 do Fire("PLAYER_SPECIALIZATION_CHANGED") end; UnitClass = realClass
 Fire("CHALLENGE_MODE_START", S(658))
 for pull = 1, 3 do

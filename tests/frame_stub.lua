@@ -21,6 +21,7 @@ local function Widget(kind)
     Show = function(self) self.shown = true end,
     Hide = function(self) self.shown = false end,
     IsShown = function(self) return self.shown end,
+    SetShown = function(self, show) self.shown = show and true or false end,
     SetScript = function(self, name, fn) self.scripts[name] = fn end,
     GetPoint = function() return "CENTER", nil, "CENTER", 0, 0 end,
     CreateFontString = function() local fs = Widget("FontString"); table.insert(FONTS, fs); return fs end,

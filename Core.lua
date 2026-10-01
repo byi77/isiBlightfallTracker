@@ -633,12 +633,17 @@ local function DiagnosticsText()
   local entries, dropped = Log.Count()
   local factors = Model.factors
   local estimating = lastRendered and lastRendered.estimateSingle ~= nil
+  local db = Log.DB()
+  local logText = L.STATE_OFF
+  if Log.IsEnabled() then
+    logText = tostring(entries) .. (dropped > 0 and string.format(L.DROPPED_FMT, dropped) or "")
+  end
   return string.format(
     L.DIAG_FMT,
     estimating and L.MODE_ESTIMATE or L.MODE_TIMING,
     factors.samples > 0 and string.format("x%.1f (%d)", factors.vp, factors.samples) or L.CALIB_NEW,
-    entries,
-    dropped > 0 and string.format(L.DROPPED_FMT, dropped) or ""
+    logText,
+    (db and db.combatOnly == true) and L.WINDOW_COMBAT_ONLY or L.WINDOW_ALWAYS
   )
 end
 
@@ -742,6 +747,18 @@ local function RestorePosition()
   end
 end
 
+-- Option "combat only" (/ibt combat on|off, off by default): the window is
+-- then shown only while in combat. The frame is not secure, so showing and
+-- hiding it in combat is allowed.
+local function IsCombatOnly()
+  local db = Log.DB()
+  return db ~= nil and db.combatOnly == true
+end
+
+local function UpdateVisibility()
+  frame:SetShown(active and (inCombat or not IsCombatOnly()))
+end
+
 local function UpdateActivation(reason)
   local shouldBeActive = IsUnholy()
   if shouldBeActive == active then
@@ -749,11 +766,9 @@ local function UpdateActivation(reason)
   end
   active = shouldBeActive
   Log.Add("activation", { active = active, reason = reason })
+  UpdateVisibility()
   if active then
-    frame:Show()
     SelfTest("activation")
-  else
-    frame:Hide()
   end
 end
 
@@ -830,7 +845,10 @@ end
 
 local function OnEvent(_, event, ...)
   if event == "PLAYER_LOGIN" then
-    Log.StartSession()
+    Log.InitDB()
+    if Log.IsEnabled() then
+      Log.StartSession()
+    end
     Model.LoadFactors(Log.DB().factors)
     RestorePosition()
     if C_Spell and C_Spell.RequestLoadSpellData then
@@ -856,6 +874,7 @@ local function OnEvent(_, event, ...)
     OnPlayerCast(spellID)
   elseif event == "PLAYER_REGEN_DISABLED" then
     inCombat = true
+    UpdateVisibility()
     combatIndex = combatIndex + 1
     lastSample = 0
     Model.ResetCalibration()
@@ -870,6 +889,7 @@ local function OnEvent(_, event, ...)
     end)
   elseif event == "PLAYER_REGEN_ENABLED" then
     inCombat = false
+    UpdateVisibility()
     local calibration = Model.calibration
     Log.Add("combat_end", {
       combat = combatIndex,
@@ -936,12 +956,29 @@ SlashCmdList.ISIBLIGHTFALL = Guard("Slash", function(message)
     if Log.DB().soundEnabled then
       pcall(PlaySoundFile, GO_SOUND, "Master")
     end
+  elseif message == "log on" or message == "log an" then
+    Log.SetEnabled(true)
+    print(addonName .. ": " .. L.LOG_ON)
+    SelfTest("log-enabled")
+  elseif message == "log off" or message == "log aus" then
+    Log.SetEnabled(false)
+    print(addonName .. ": " .. L.LOG_OFF)
+  elseif message == "combat on" or message == "combat an" then
+    Log.DB().combatOnly = true
+    UpdateVisibility()
+    print(addonName .. ": " .. L.COMBAT_ONLY_ON)
+  elseif message == "combat off" or message == "combat aus" then
+    Log.DB().combatOnly = false
+    UpdateVisibility()
+    print(addonName .. ": " .. L.COMBAT_ONLY_OFF)
   elseif message == "test" then
     local tooltip = SelfTest("manual")
     print(addonName .. ": " .. string.format(L.SELFTEST_FMT, tooltip.vpReason, tooltip.dpReason))
+    if not Log.IsEnabled() then
+      print(addonName .. ": " .. L.SELFTEST_NOLOG)
+    end
   else
-    local entries, dropped = Log.Count()
-    print(addonName .. ": " .. string.format(L.HELP_FMT, entries, dropped))
+    print(addonName .. ": " .. L.HELP)
     print(addonName .. ": " .. DiagnosticsText())
   end
 end)

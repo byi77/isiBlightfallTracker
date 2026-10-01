@@ -18,7 +18,8 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 - **Plague timer**, Soul Reaper window (with the +20 % bonus shown) and Dark Transformation cooldown
 - **After every fight:** plague erupt damage from the Blizzard damage meter and an estimated "real vs. predicted" comparison
 - **Self-calibrating:** learns a correction factor from your single-target fights
-- **Self-test and local log** of what the game allows - useful for tuning, never sent anywhere
+- **Optional local log** (off by default) with a self-test of what the game allows - useful for tuning, never sent anywhere
+- **Combat-only mode** if you want the window to appear only in combat
 - **Built for the 12.x addon rules:** no combat log, no protected actions, error guard on every handler - no Lua error spam in your key
 - English and German
 
@@ -61,9 +62,11 @@ The **timing signal does not depend on any of this** - it only uses your own cas
 
 | Command | Effect |
 |---|---|
-| `/ibt` | log size, mode, calibration |
+| `/ibt` | mode, calibration, log and window setting |
+| `/ibt combat on` / `off` | show the window only in combat (default: off) |
+| `/ibt log on` / `off` | record a local log (default: off) |
 | `/ibt sound` | voice cue on/off |
-| `/ibt test` | write a self-test to the log |
+| `/ibt test` | run a self-test |
 | `/ibt reset` | reset window position |
 
 Drag the window with the left mouse button.
@@ -71,7 +74,7 @@ Drag the window with the left mouse button.
 ## Notes
 
 - The damage estimate reads German and English plague tooltips. On other client languages the window shows *estimate off*; the timing signal still works.
-- The log stays on your computer (`WTF\Account\<account>\SavedVariables\isiBlightfallTracker.lua`, last 10 sessions).
+- The log is off by default. When switched on it stays on your computer (`WTF\Account\<account>\SavedVariables\isiBlightfallTracker.lua`, last 10 sessions).
 
 ---
 
@@ -82,3 +85,5 @@ Zeigt den **erwarteten Schaden von Seuchensturz**, gibt mit Signal und Ansage "G
 **Verlässlich:** Bereitschaft, DT-Balken (15 s + 1 s je Todesmantel/Epidemie), Seelenernter-Zeit, Zündsignal, Gegnerzahl (sichtbare Namensplaketten), Ausbrüche nach dem Kampf. **Ungefähr:** DT-CD. **Geschätzt** (mit `~`): große Zahl, Pro Ziel, Seuchen-Balken, Ist (gesch.), Vorhersage.
 
 **Warum geschätzt?** Seit Patch 12.0 verbirgt Blizzard Kampfdaten vor Addons: Auren auf Gegnern, deine Werte, den Damage Meter im Kampf und das Kampflog. Das Addon rechnet deshalb mit deinen eigenen Zaubern, dem Live-Tooltip deiner Seuchen und einem selbst gelernten Korrekturfaktor. Seuchensturz hat im Damage Meter keine eigene Zeile - "Ist" ist darum ebenfalls gerechnet: im Einzelziel brauchbar, in großen Packs nicht. Das **Zündsignal** hängt davon nicht ab.
+
+**Befehle:** `/ibt combat an|aus` (Fenster nur im Kampf, Standard aus), `/ibt log an|aus` (lokales Log, Standard aus), `/ibt sound`, `/ibt test`, `/ibt reset`.

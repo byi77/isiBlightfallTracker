@@ -105,16 +105,21 @@ actually carry Virulent Plague is hidden in combat.
 
 5. Commands (optional - nothing needs to be typed)
 ---------------------------------------------------
-  /ibt          log size, mode and calibration
-  /ibt sound    voice cue on/off (plays it once when switched on)
-  /ibt test     write a self-test to the log
-  /ibt reset    reset the window position
+  /ibt                 mode, calibration, log and window setting
+  /ibt combat on|off   show the window only in combat (default: off)
+  /ibt log on|off      record the log (default: off)
+  /ibt sound           voice cue on/off (plays it once when switched on)
+  /ibt test            run a self-test (written to the log if it is on)
+  /ibt reset           reset the window position
+  German aliases: "an" / "aus" instead of "on" / "off".
 
 
 6. Self-test and log
 --------------------
-The addon checks on its own what the game allows right now (at login, at
-every combat start, keystone start and boss pull) and writes a log:
+The log is OFF by default. Switch it on with /ibt log on if you want to
+check the estimate or report a problem. When on, the addon checks what the
+game allows right now (at login, at every combat start, keystone start and
+boss pull) and writes a log:
 casts, estimates, signals and the damage meter result after each fight.
 Values the game hides are never stored. The log stays on your computer in
   WTF\Account\<account>\SavedVariables\isiBlightfallTracker.lua
@@ -155,3 +160,6 @@ aus deinen eigenen Zaubern, dem Live-Tooltip deiner Seuchen und einem
 selbst gelernten Korrekturfaktor. Seuchensturz hat im Damage Meter keine
 eigene Zeile, daher ist auch "Ist" nur gerechnet - im Einzelziel brauchbar,
 in großen Packs nicht.
+
+Befehle: /ibt combat an|aus (Fenster nur im Kampf, Standard aus),
+/ibt log an|aus (lokales Log, Standard aus), /ibt sound, /ibt test, /ibt reset.

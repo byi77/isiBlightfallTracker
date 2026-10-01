@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 0.5.0
+
+### Added
+- `/ibt combat on|off`: show the window only in combat (default: off, always visible).
+- `/ibt log on|off`: the local session log is now opt-in. German aliases `an` / `aus` work as well.
+- `/ibt` now also reports the log and window setting.
+
+### Changed
+- The log is off by default. Settings (window position, voice cue, combat-only, calibration) are saved independently of the log.
+
 ## Version 0.4.3 - first public release
 
 Unholy Death Knight helper for Blightfall (Retail 12.1, Midnight).

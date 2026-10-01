@@ -35,12 +35,41 @@ local function Round(value, digits)
 end
 ns.Round = Round
 
-function Log.StartSession()
+-- Creates the SavedVariables table (settings live here even with the log off).
+function Log.InitDB()
   -- The SavedVariables table must be a global named as in the .toc.
   _G.isiBlightfallTrackerDB = _G.isiBlightfallTrackerDB or {}
   local db = _G.isiBlightfallTrackerDB
   db.schema = 1
   db.sessions = db.sessions or {}
+end
+
+-- The log is off by default (opt-in via /ibt log on).
+function Log.IsEnabled()
+  local db = _G.isiBlightfallTrackerDB
+  return db ~= nil and db.logEnabled == true
+end
+
+-- Switches recording on (starts a new session) or off (stops recording; the
+-- sessions already stored stay in SavedVariables).
+function Log.SetEnabled(enabled)
+  local db = _G.isiBlightfallTrackerDB
+  if not db then
+    return
+  end
+  db.logEnabled = enabled == true
+  if db.logEnabled and not session then
+    Log.StartSession()
+  elseif not db.logEnabled then
+    session = nil
+  end
+end
+
+function Log.StartSession()
+  local db = _G.isiBlightfallTrackerDB
+  if not db then
+    return
+  end
 
   local version, build = GetBuildInfo()
   local _, className = UnitClass("player")

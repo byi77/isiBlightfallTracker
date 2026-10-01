@@ -31,6 +31,7 @@ run "locale keys used" lua "${T}/test_locale_keys.lua" "${ROOT}/Locale.lua" "${R
 run "layout widths" lua "${T}/test_layout.lua" "${ROOT}"
 run "full simulation (readable)" lua "${T}/sim_full.lua" "${ROOT}" plain
 run "full simulation (M+ secrets)" lua "${T}/sim_full.lua" "${ROOT}" secret
+run "settings (log, combat-only)" lua "${T}/test_settings.lua" "${ROOT}" "${T}/frame_stub.lua"
 run "error firewall" lua "${T}/sim_faults.lua" "${ROOT}" plain
 
 if [ "${FAILED}" -ne 0 ]; then

@@ -88,6 +88,7 @@ local function Advance(seconds)
   end
 end
 
+isiBlightfallTrackerDB = { logEnabled = true } -- the log is opt-in; these simulations read it
 Fire("PLAYER_LOGIN"); Fire("PLAYER_ENTERING_WORLD")
 Fire("CHALLENGE_MODE_START", S(658))
 for pull = 1, 3 do

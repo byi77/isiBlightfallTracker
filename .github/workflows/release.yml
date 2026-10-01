@@ -1,0 +1,133 @@
+name: Release
+
+# Publishes a release when a tag "isiBlightfallTracker_release_<version>" is
+# pushed. The version in the tag must match "## Version:" in the TOC.
+# Required repository settings for the CurseForge upload:
+#   variable CURSE_PROJECT_ID  (numeric project id from CurseForge)
+#   secret   CF_API_KEY        (CurseForge API token)
+
+on:
+  push:
+    tags:
+      - "isiBlightfallTracker_release_*"
+
+jobs:
+  quality-gate:
+    uses: ./.github/workflows/tests.yml
+    permissions:
+      contents: read
+
+  publish-release:
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read version from tag
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          TAG="${REF_NAME}"
+          case "${TAG}" in
+            isiBlightfallTracker_release_*) ;;
+            *) echo "Unexpected tag '${TAG}'."; exit 1 ;;
+          esac
+          echo "RELEASE_TAG=${TAG}" >> "${GITHUB_ENV}"
+          echo "RELEASE_VERSION=${TAG#isiBlightfallTracker_release_}" >> "${GITHUB_ENV}"
+      - name: Verify tag version matches the TOC
+        run: |
+          set -euo pipefail
+          TOC_VERSION="$(awk -F': *' '/^## Version:/ { print $2; exit }' isiBlightfallTracker.toc | tr -d '\r')"
+          if [ "${TOC_VERSION}" != "${RELEASE_VERSION}" ]; then
+            echo "Tag names version ${RELEASE_VERSION}, but the TOC says ${TOC_VERSION}."
+            exit 1
+          fi
+          echo "Tag version ${RELEASE_VERSION} matches the TOC."
+      - name: Build package
+        run: |
+          set -euo pipefail
+          rm -rf dist package
+          mkdir -p dist package/isiBlightfallTracker
+          while IFS= read -r -d '' file; do
+            case "${file}" in
+              .github/*|tests/*|media/*|.gitignore|.pkgmeta|CURSEFORGE.md|CHANGELOG.md|CHANGELOG_RELEASE.md)
+                continue
+                ;;
+            esac
+            target="package/isiBlightfallTracker/${file}"
+            mkdir -p "$(dirname "${target}")"
+            cp "${file}" "${target}"
+          done < <(git ls-files -z)
+          ASSET="dist/isiBlightfallTracker-${RELEASE_VERSION}.zip"
+          (cd package && zip -qr "../${ASSET}" isiBlightfallTracker)
+          unzip -l "${ASSET}"
+          if ! unzip -l "${ASSET}" "isiBlightfallTracker/isiBlightfallTracker.toc" >/dev/null 2>&1; then
+            echo "Package must contain isiBlightfallTracker/isiBlightfallTracker.toc."
+            exit 1
+          fi
+          echo "RELEASE_ASSET=${ASSET}" >> "${GITHUB_ENV}"
+      - name: Create GitHub release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          NOTES="CHANGELOG_RELEASE.md"
+          if [ ! -s "${NOTES}" ]; then
+            NOTES="$(mktemp)"
+            printf 'Release %s\n' "${RELEASE_VERSION}" > "${NOTES}"
+          fi
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release edit "${RELEASE_TAG}" --title "v${RELEASE_VERSION}" --notes-file "${NOTES}"
+          else
+            gh release create "${RELEASE_TAG}" --title "v${RELEASE_VERSION}" --notes-file "${NOTES}" --latest
+          fi
+          gh release upload "${RELEASE_TAG}" "${RELEASE_ASSET}" --clobber
+      - name: Upload to CurseForge
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          CURSE_PROJECT_ID: ${{ vars.CURSE_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          case "${CURSE_PROJECT_ID}" in
+            ''|*[!0-9]*) echo "Repository variable CURSE_PROJECT_ID must be the numeric CurseForge project id."; exit 1 ;;
+          esac
+          if [ -z "${CF_API_KEY}" ]; then
+            echo "Repository secret CF_API_KEY must be set."
+            exit 1
+          fi
+          # TOC interface 120100 -> game version name 12.1.0
+          INTERFACE="$(awk -F': *' '/^## Interface:/ { print $2; exit }' isiBlightfallTracker.toc | tr -d '\r' | cut -d, -f1 | tr -d ' ')"
+          LEN="${#INTERFACE}"
+          GAME_VERSION="$((10#${INTERFACE:0:LEN-4})).$((10#${INTERFACE:LEN-4:2})).$((10#${INTERFACE:LEN-2:2}))"
+          METADATA="$(mktemp)"
+          jq -n \
+            --rawfile changelog CHANGELOG_RELEASE.md \
+            --arg display_name "isiBlightfallTracker-${RELEASE_VERSION}" \
+            --arg game_version "${GAME_VERSION}" \
+            '{
+              changelog: $changelog,
+              changelogType: "markdown",
+              displayName: $display_name,
+              gameVersionNames: [$game_version],
+              releaseType: "release"
+            }' > "${METADATA}"
+          RESPONSE="$(mktemp)"
+          HTTP_CODE="$(
+            curl --silent --show-error --location \
+              --output "${RESPONSE}" \
+              --write-out "%{http_code}" \
+              --form "metadata=<${METADATA};type=application/json" \
+              --form "file=@${RELEASE_ASSET};type=application/zip" \
+              "https://wow.curseforge.com/api/projects/${CURSE_PROJECT_ID}/upload-file?token=${CF_API_KEY}"
+          )"
+          if [ "${HTTP_CODE}" -lt 200 ] || [ "${HTTP_CODE}" -ge 300 ]; then
+            echo "CurseForge upload failed with HTTP ${HTTP_CODE}."
+            cat "${RESPONSE}"
+            exit 1
+          fi
+          echo "CurseForge upload accepted: $(cat "${RESPONSE}")"

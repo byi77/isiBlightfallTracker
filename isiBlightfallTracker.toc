@@ -1,0 +1,11 @@
+## Interface: 120100
+## Title: isiBlightfallTracker
+## Notes: Unholy DK: estimated Blightfall damage, timing signal and a self-test log.
+## Author: mematiWoW
+## Version: 0.4.3
+## SavedVariables: isiBlightfallTrackerDB
+
+Locale.lua
+Log.lua
+Model.lua
+Core.lua

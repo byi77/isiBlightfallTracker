@@ -134,8 +134,15 @@ local state = {
   tooltipStatus = "unknown",
   soulReaperEnds = nil,
   darkTransformationAt = nil,
+  bossEncounter = false, -- between ENCOUNTER_START and ENCOUNTER_END
 }
 Model.state = state
+
+-- Boss encounters (dungeon and raid bosses, set from ENCOUNTER_START /
+-- ENCOUNTER_END) keep the Soul Reaper timing rule with adds, as in SimC.
+function Model.SetBossEncounter(active)
+  state.bossEncounter = active == true
+end
 
 -- Tooltip parsing -----------------------------------------------------------
 
@@ -555,8 +562,10 @@ function Model.Evaluate(now)
     elseif
       soulReaperLeft > 0
       and soulReaperLeft <= SIGNAL_LEAD_SECONDS
-      and result.enemies <= SOUL_REAPER_RULE_MAX_ENEMIES
-      and not state.epidemicInWindow
+      -- SimC: (active_enemies <= 3 | raid_event.pull.has_boss). Epidemic in
+      -- the window stands for "more than 3" (nameplate counts can miss
+      -- enemies); a boss encounter keeps the rule with any number of adds.
+      and (state.bossEncounter or (result.enemies <= SOUL_REAPER_RULE_MAX_ENEMIES and not state.epidemicInWindow))
       and state.hasReaping ~= false
     then
       reason = "now-soul-reaper"

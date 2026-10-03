@@ -119,6 +119,16 @@ Window(false, false)
 check(M.Evaluate(43.5).signal == "charging", "without Reaping the Soul Reaper rule stays off")
 Window(false, true)
 check(M.Evaluate(43.5).signal == "now-soul-reaper", "single target + Reaping keeps the SimC Soul Reaper rule")
+-- SimC: (active_enemies <= 3 | boss in the pull). A boss encounter keeps the
+-- Soul Reaper rule with adds (Epidemic in the window, many nameplates).
+M.SetBossEncounter(true)
+Window(true, true)
+check(M.Evaluate(43.5).signal == "now-soul-reaper", "boss encounter: Soul Reaper rule despite Epidemic in the window")
+Window(true, false)
+check(M.Evaluate(43.5).signal == "charging", "boss encounter without Reaping: no Soul Reaper rule")
+M.SetBossEncounter(false)
+Window(true, true)
+check(M.Evaluate(43.5).signal == "charging", "after the encounter: Epidemic disables the rule again")
 IsPlayerSpell = nil
 check(M.HasReapingTalent() == nil, "missing talent API reports unknown")
 -- 12.x: C_SpellBook.IsSpellKnown (player bank) wins over the deprecated global.

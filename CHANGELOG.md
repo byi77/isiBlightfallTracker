@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased - Version 0.6.1
+
+### Changed
+- Boss fights: the "NOW" signal before the end of the Soul Reaper debuff now also fires with adds and Epidemic in the window, as in the simulation rotation (up to 3 enemies or a boss in the pull). Boss fights are recognised from the game's encounter start and end; a loading screen ends them. After a /reload in the middle of a boss fight the rule works as outside boss fights until the next encounter.
+
 ## 2026-10-03 - Version 0.6.0
 
 ### Added

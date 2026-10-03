@@ -10,6 +10,10 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 
 ---
 
+## What's new in 0.6.1
+
+- **Boss fights:** the "NOW" signal shortly before your Soul Reaper debuff ends now also fires when adds are up and you use Epidemic - just like the simulation rotation (up to 3 enemies, or any boss fight). Outside boss fights nothing changes.
+
 ## What's new in 0.6.0
 
 - **Options page** in *Esc > Options > AddOns > isiBlightfallTracker*
@@ -36,7 +40,7 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 
 ## How Blightfall works (in short)
 
-Blightfall consumes your plagues within 40 yards and deals **200 % of their remaining damage** at once. It does not store damage - you *charge* it by extending your plagues (Death Coil, Epidemic, Putrefy with Blightburst, Vampiric Strike with Infliction of Sorrow). Guides and simulations press it shortly before **Dark Transformation**, the **Soul Reaper** debuff (single target) or a trinket effect runs out. That is exactly what the signal follows.
+Blightfall consumes your plagues within 40 yards and deals **200 % of their remaining damage** at once. It does not store damage - you *charge* it by extending your plagues (Death Coil, Epidemic, Putrefy with Blightburst, Vampiric Strike with Infliction of Sorrow). Guides and simulations press it shortly before **Dark Transformation**, the **Soul Reaper** debuff (up to 3 enemies, or any boss fight) or a trinket effect runs out. That is exactly what the signal follows.
 
 ---
 
@@ -120,6 +124,8 @@ Drag the window with the left mouse button.
 Zeigt den **erwarteten Schaden von Seuchensturz**, gibt mit Signal und Ansage den richtigen Zündzeitpunkt vor, zeigt die **echte Restzeit deiner Seuchen** auf dem Ziel und lernt aus deinen Kämpfen. Läuft in Open World, Dungeons, **M+** und Raids.
 
 **⚠ Test an Trainingspuppen:** Einzelziel funktioniert. **Multitarget an mehreren Puppen ist eingeschränkt**, weil das Spiel nicht alle Puppen als Gegner anzeigt (es wird nur eine Namensplakette gezählt). Gegnerzahl und Alle-Ziele-Wert sind dort zu niedrig. Für Multitarget bitte im **Dungeon** beurteilen, dort werden die Gegner korrekt gezählt.
+
+**Zündsignal:** kurz vor Ende der Dunklen Verwandlung, kurz vor Ende des Seelenernter-Debuffs (mit Talent "Reaping"; bei bis zu 3 Gegnern **oder in jedem Bosskampf**, auch mit Adds), oder bevor die Seuchen auslaufen.
 
 **Verlässlich:** Bereitschaft, Balken der Dunklen Verwandlung (15 s + 1 s je Todesmantel/Epidemie, auch Nekrotischer Mantel/Friedhof), Restzeit von Virulenter Seuche und Schreckensseuche auf deinem Ziel, Seelenernter-Zeit, Zündsignal, Gegnerzahl im Dungeon (sichtbare Namensplaketten), Ausbrüche nach dem Kampf. **Ungefähr:** Nächste Verwandlung. **Geschätzt** (mit `~`): große Zahl, Pro Ziel, Ist (geschätzt), Vorhersage.
 

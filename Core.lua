@@ -1084,6 +1084,11 @@ local function OnEvent(_, event, ...)
     end
     return
   end
+  -- Boss state is tracked for every spec, so a spec change during an
+  -- encounter cannot leave it stale; a loading screen always ends it.
+  if event == "ENCOUNTER_START" or event == "ENCOUNTER_END" or event == "PLAYER_ENTERING_WORLD" then
+    Model.SetBossEncounter(event == "ENCOUNTER_START")
+  end
   if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_SPECIALIZATION_CHANGED" then
     UpdateActivation(event)
     if active then

@@ -161,6 +161,16 @@ events.scripts.OnEvent(events, "PLAYER_REGEN_ENABLED")
 check(TOUCHES == 0, "no access to the container's widgets after the hand-over (" .. TOUCHES .. ")")
 ns.Settings.Set("language", "auto"); ns.UI.ApplyLanguage()
 
+-- Boss state through the real event dispatcher: ENCOUNTER_START sets it,
+-- ENCOUNTER_END and a loading screen clear it.
+events.scripts.OnEvent(events, "ENCOUNTER_START", 3001, "Boss", 8, 5)
+check(ns.Model.state.bossEncounter == true, "ENCOUNTER_START marks a boss encounter")
+events.scripts.OnEvent(events, "ENCOUNTER_END", 3001, "Boss", 8, 5, 1)
+check(ns.Model.state.bossEncounter == false, "ENCOUNTER_END ends it")
+events.scripts.OnEvent(events, "ENCOUNTER_START", 3001, "Boss", 8, 5)
+events.scripts.OnEvent(events, "PLAYER_ENTERING_WORLD")
+check(ns.Model.state.bossEncounter == false, "a loading screen ends a missed encounter")
+
 -- Target change refreshes the container.
 local before = UPDATES
 events.scripts.OnEvent(events, "PLAYER_TARGET_CHANGED")

@@ -24,8 +24,10 @@ it, even after Dark Transformation has ended.
 
 When to press it (current guides and simulations): shortly before the
 first of these runs out:
-  - Dark Transformation (also extended by 1 s per Death Coil / Epidemic),
-  - the Soul Reaper debuff (+20 % to Blightfall's damage; single target),
+  - Dark Transformation (also extended by 1 s per Death Coil / Epidemic,
+    Necrotic Coil / Graveyard),
+  - the Soul Reaper debuff (+20 % to Blightfall's damage; up to 3 enemies
+    or a boss encounter, Reaping talented),
   - a damage trinket effect.
 
 
@@ -186,6 +188,10 @@ Deutsch - Kurzfassung
 -----------------------------------------------------------------------
 Zeigt den erwarteten Schaden von Seuchensturz, sagt mit Signal und
 Ansage "Go! Go!", wann du zünden sollst, und protokolliert alles lokal.
+
+Zündsignal: kurz vor Ende der Dunklen Verwandlung, kurz vor Ende des
+Seelenernter-Debuffs (mit Talent "Reaping"; bei bis zu 3 Gegnern oder in
+jedem Bosskampf, auch mit Adds), oder bevor die Seuchen auslaufen.
 
 Verlässlich: Bereitschaft, DT-Balken (15 s + 1 s je Todesmantel/Epidemie),
 Seelenernter-Zeit, Zündsignal, Gegnerzahl (sichtbare Namensplaketten),

@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global, lowercase-global
+-- Test script: runs outside WoW with standard Lua and stubs WoW globals.
 -- Unit test for ReadEruptsLive with four damage-meter shapes, using the real
 -- addon files and the widget stub.
 local dir, stub = arg[1], arg[2]
@@ -25,7 +27,7 @@ AbbreviateNumbers = function(v)
 end
 dofile(stub)
 local ns = {}
-for _, file in ipairs({ "Locale.lua", "Log.lua", "Model.lua", "Core.lua" }) do
+for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
   assert(loadfile(dir .. "/" .. file))("isiBlightfallTracker", ns)
 end
 

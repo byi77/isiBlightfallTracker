@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global, lowercase-global, duplicate-set-field, assign-type-mismatch, redefined-local
+-- Test script: runs outside WoW with standard Lua and stubs WoW globals.
 local ns = {}
 local function load(path) assert(loadfile(path))("isiBlightfallTracker", ns) end
 GetTime = function() return 0 end
@@ -88,6 +90,17 @@ M.OnPlayerCast(207317, 601)                -- Epidemic +1 -> 616
 check(math.abs(M.Evaluate(601).dtLeft - 15) < 1e-9, "Epidemic during DT extends it by 1s")
 M.OnPlayerCast(47541, 617)                 -- after DT ended: no effect
 check(M.Evaluate(617).dtLeft < 0, "Death Coil after DT ended does not revive it")
+-- 0.6.0: Forbidden Knowledge replacements (Necrotic Coil 1242174, Graveyard
+-- 383269) extend plagues and DT like Death Coil / Epidemic.
+M.ResetCombatState()
+M.OnPlayerCast(77575, 700)                 -- plagues 18 s -> 718
+M.OnPlayerCast(1233448, 700)               -- DT ends 715
+M.OnPlayerCast(1242174, 701)               -- Necrotic Coil +1
+M.OnPlayerCast(383269, 702)                -- Graveyard +1
+local fk = M.Evaluate(702)
+check(math.abs(fk.remVP - 18) < 1e-9 and math.abs(fk.remDP - 18) < 1e-9, "Necrotic Coil and Graveyard extend both plagues by 1s each")
+check(math.abs(fk.dtLeft - 15) < 1e-9, "Necrotic Coil and Graveyard extend DT (Eternal Agony)")
+M.OnPlayerCast(1271967, 703)               -- clear the window
 -- 0.2.1: replay of the 2026-10-01 14:15 dummy session (DT 37.0, SR 38.4, Epidemic in the window).
 local function Window(withEpidemic, reaping)
   IsPlayerSpell = function(id) return id == 377514 and reaping end
@@ -108,6 +121,13 @@ Window(false, true)
 check(M.Evaluate(43.5).signal == "now-soul-reaper", "single target + Reaping keeps the SimC Soul Reaper rule")
 IsPlayerSpell = nil
 check(M.HasReapingTalent() == nil, "missing talent API reports unknown")
+-- 12.x: C_SpellBook.IsSpellKnown (player bank) wins over the deprecated global.
+local bankSeen
+C_SpellBook = { IsSpellKnown = function(id, bank) bankSeen = bank; return id == 377514 end }
+IsPlayerSpell = function() return false end
+check(M.HasReapingTalent() == true and bankSeen == 0, "C_SpellBook.IsSpellKnown used with the player spell bank")
+C_SpellBook = nil
+IsPlayerSpell = nil
 -- 0.2.2: log sample 14:15 t=34 (tooltip VP 19543, DP 46149, rem 14.1s, factors 2.49/6.39).
 M.factors.vp, M.factors.dp, M.factors.samples = 2.49, 6.39, 2
 UnitExists = function() return false end

@@ -16,8 +16,9 @@ plagues (Virulent Plague on every enemy, Dread Plague on one enemy) within
 40 yards and deals 200 % of their REMAINING damage at once.
 
 It does not store damage. You "charge" it by extending your plagues:
-Death Coil and Epidemic add 1 s, Putrefy with Blightburst and Vampiric
-Strike with Infliction of Sorrow add 3 s. Without extensions the value
+Death Coil and Epidemic (and their Forbidden Knowledge versions Necrotic
+Coil and Graveyard) add 1 s, Putrefy with Blightburst and Vampiric Strike
+with Infliction of Sorrow add 3 s. Without extensions the value
 drops with every plague tick. Blightfall stays on the button until you use
 it, even after Dark Transformation has ended.
 
@@ -30,23 +31,30 @@ first of these runs out:
 
 2. The window
 -------------
-  [icon]                ~1.27M   expected Blightfall damage (big number)
-  NOW - DT ending                signal
-  Enemies                    12
-  Per target              ~115k
-  DT                       2.7s  + bar  Dark Transformation time left
-  Plagues                  5.7s  + bar  plague time left (modelled)
-  DT-CD                     29s  or "SR (+20%)  3.1s" while Soul Reaper runs
-  ---------------------------
-  Erupts                 ~4.25M  plague erupt damage of the last fight
-  Real (est.)             ~410k  last fight: Blightfall per press (estimated)
-  Predicted               ~390k  last fight: average prediction at press
+  [icon]                     ~1.27M   expected Blightfall damage (big number)
+  NOW: Transformation ends            signal
+  Enemies                         12
+  Per target                   ~115k
+  Dark Transformation           2.7s  + bar  time left
+  Virulent Plague              14.2s  + bar  real time left on your target
+  Dread Plague                 14.2s  + bar  (modelled without an enemy target)
+  Next Transformation            29s  or "Soul Reaper +20%  3.1s" while
+                                      the Soul Reaper debuff runs
+  --------------------------------
+  Erupts                      ~4.25M  plague erupt damage of the last fight
+  Actual (estimated)           ~410k  last fight: Blightfall per press
+  Predicted                    ~390k  last fight: average prediction at press
 
 The number is grey until Blightfall is available and white once you can
 press it. In a "NOW" state the frame pulses and a short voice cue
 ("Go! Go!") plays once.
 
-Drag the window with the left mouse button.
+Drag the window with the left mouse button. Size, background
+transparency, border, lock, sound, channel and language are set in the
+options page (see section 5). A size change keeps the left edge of the
+window in place; the window grows to the right and down. Above 50 %
+background transparency all text gets an outline so it stays readable
+over the game world.
 
 
 3. Which numbers you can trust, and which are estimates
@@ -55,20 +63,24 @@ RELIABLE (taken directly from the game or from your own casts):
   - Blightfall ready / not ready        your own Dark Transformation cast
   - Dark Transformation bar             15 s from your cast, +1 s per Death
                                         Coil or Epidemic while it runs
-  - Soul Reaper time (SR / SE)          8 s from your Soul Reaper cast
+  - Soul Reaper time                    8 s from your Soul Reaper cast
   - The "NOW" signal timing             rules above, from your own casts
   - Enemies                             enemies in combat with a VISIBLE
                                         nameplate (turn on enemy nameplates)
   - Erupts (after combat)               Blizzard damage meter, exact
+  - Virulent Plague / Dread Plague      real time left of YOUR plagues on
+    (with an enemy target)              your target, shown by the game's
+                                        own aura display
 
 APPROXIMATE:
-  - DT-CD                               assumes the base 45 s cooldown;
+  - Next Transformation                 assumes the base 45 s cooldown;
                                         cooldown reductions are not tracked
 
 ESTIMATED (shown with "~"):
   - The big number and "Per target"
-  - The Plagues bar
-  - Real (est.) and Predicted
+  - Virulent Plague / Dread Plague without an enemy target (modelled
+    from your casts)
+  - Actual (estimated) and Predicted
 
 
 4. Why some numbers can only be estimated
@@ -92,7 +104,7 @@ rebuilds that from what it may see:
     comparing its expectation with the damage meter (which is readable
     again after combat).
 
-"Real (est.)" is an estimate too: Blightfall has no damage meter line of
+"Actual (estimated)" is an estimate too: Blightfall has no damage meter line of
 its own. Its damage is counted together with the erupts of Scourge
 Strike, Vampiric Strike and Putrefy. The addon subtracts a calculated
 share for those. That works reasonably on a single target; in large
@@ -103,9 +115,23 @@ unreliable.
 actually carry Virulent Plague is hidden in combat.
 
 
-5. Commands (optional - nothing needs to be typed)
----------------------------------------------------
+5. Options and commands (optional - nothing needs to be typed)
+---------------------------------------------------------------
+Options page: Esc > Options > AddOns > isiBlightfallTracker (or /ibt options)
+  General         language: automatic (game language), English, Deutsch
+  Voice cue       on/off, sound, sound channel, "Play sound" test button
+    Sound:        the voice "Go! Go!" (default), built-in game sounds
+                  (raid warning, ready check, alarm clock, boss whisper),
+                  or any sound of an installed shared-media sound pack
+    Channel:      Master (default), Effects, Dialog, Ambience, Music -
+                  the cue follows that channel's volume slider
+  Window          show only in combat, lock, border, size,
+                  background transparency, reset position
+  Log             record a local log (default: off)
+
+Commands:
   /ibt                 mode, calibration, log and window setting
+  /ibt options         open the options page
   /ibt combat on|off   show the window only in combat (default: off)
   /ibt log on|off      record the log (default: off)
   /ibt sound           voice cue on/off (plays it once when switched on)
@@ -128,10 +154,13 @@ Values the game hides are never stored. The log stays on your computer in
 
 7. Languages
 ------------
-German client: German texts. Every other client: English texts. The
-damage estimate reads German and English plague tooltips; on other
-client languages the window shows "estimate off" and only the timing
-signal works.
+By default the texts follow the game client: German client - German,
+every other client - English. The options page lets you pick English or
+German yourself; the window and the chat messages switch at once, the
+options page itself after the next /reload. The damage estimate reads
+German and English plague tooltips (this depends on the game client, not
+on the chosen language); on other client languages the window shows
+"estimate off" and only the timing signal works.
 
 
 8. Safety
@@ -140,6 +169,11 @@ Built for the 12.x addon restrictions: no combat log, no protected
 actions, all hidden values are only passed to the display or skipped.
 Every handler runs behind an error guard: a failing part is logged and
 switched off instead of showing Lua errors.
+The real plague time uses the game's own aura display. It is set up out
+of combat only (after a /reload in combat: when combat ends); the addon
+configures it once and never touches it again, because the game locks it
+while auras are hidden (combat, Mythic+). If it cannot be set up, the
+plague rows show the modelled time.
 
 
 -----------------------------------------------------------------------
@@ -150,9 +184,10 @@ Ansage "Go! Go!", wann du zünden sollst, und protokolliert alles lokal.
 
 Verlässlich: Bereitschaft, DT-Balken (15 s + 1 s je Todesmantel/Epidemie),
 Seelenernter-Zeit, Zündsignal, Gegnerzahl (sichtbare Namensplaketten),
-Ausbrüche nach dem Kampf. Ungefähr: DT-CD.
-Geschätzt (mit "~"): große Zahl, Pro Ziel, Seuchen-Balken, Ist (gesch.),
-Vorhersage.
+Ausbrüche nach dem Kampf. Ungefähr: Nächste Verwandlung.
+Virulente Seuche / Schreckensseuche: echte Restzeit auf deinem Ziel (ohne
+feindliches Ziel aus deinen Zaubern gerechnet).
+Geschätzt (mit "~"): große Zahl, Pro Ziel, Ist (geschätzt), Vorhersage.
 
 Warum: Seit Patch 12.0 verbirgt Blizzard Kampfdaten vor Addons (Gegner-
 Auren, eigene Werte, Damage Meter, Kampflog). Das Addon rechnet deshalb
@@ -161,5 +196,10 @@ selbst gelernten Korrekturfaktor. Seuchensturz hat im Damage Meter keine
 eigene Zeile, daher ist auch "Ist" nur gerechnet - im Einzelziel brauchbar,
 in großen Packs nicht.
 
-Befehle: /ibt combat an|aus (Fenster nur im Kampf, Standard aus),
-/ibt log an|aus (lokales Log, Standard aus), /ibt sound, /ibt test, /ibt reset.
+Einstellungen: Esc > Optionen > AddOns > isiBlightfallTracker (oder
+/ibt optionen): Sprache (automatisch, English, Deutsch), Ansage an/aus, Sound (Sprache, Spielsounds oder Sounds aus
+einem Shared-Media-Soundpaket), Soundkanal (Standard Master), Testsound;
+Fenster nur im Kampf, sperren, Rahmen, Größe, Hintergrund-Transparenz,
+Position zurücksetzen; Log (Standard aus). Beim Ändern der Größe bleibt
+der linke Rand stehen. Ab 50 % Transparenz bekommt die Schrift eine Kontur.
+Befehle: /ibt combat an|aus, /ibt log an|aus, /ibt sound, /ibt test, /ibt reset.

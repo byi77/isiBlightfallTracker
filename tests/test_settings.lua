@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global, lowercase-global
+-- Test script: runs outside WoW with standard Lua and stubs WoW globals.
 -- Settings: log opt-in (/ibt log on|off) and combat-only window
 -- (/ibt combat on|off), driven through the real slash command and events.
 local dir, stub = arg[1], arg[2]
@@ -24,7 +26,7 @@ local function Boot(savedDB)
   print = function() end
   dofile(stub)
   local ns = {}
-  for _, file in ipairs({ "Locale.lua", "Log.lua", "Model.lua", "Core.lua" }) do
+  for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
     assert(loadfile(dir .. "/" .. file))("isiBlightfallTracker", ns)
   end
   local display, events

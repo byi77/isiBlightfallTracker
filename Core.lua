@@ -334,9 +334,13 @@ local selfTestGuarded = Guard("SelfTest", SelfTest)
 -- edge); every text is single line without word wrap, so a long value is
 -- truncated instead of spilling into the next row. Diagnostics live in the
 -- log and in /ibt, not here.
+--
+-- Readability: every text has a drop shadow. Above 50 % background
+-- transparency the text also gets an outline and the muted colours brighten,
+-- so the window stays readable over a bright game world.
 
 local WHITE = "Interface\\Buttons\\WHITE8x8"
-local FRAME_WIDTH = 130
+local FRAME_WIDTH = 170
 local PAD = 6
 local INNER = FRAME_WIDTH - 2 * PAD
 local VALUE_WIDTH = 44
@@ -348,21 +352,23 @@ local ROW = {
   perTarget = -66,
   dt = -80,
   dtBar = -91,
-  plagues = -97,
-  plagueBar = -108,
-  timing = -116,
-  separator = -130,
-  erupts = -136, -- erupt total (damage meter; locked in combat)
-  real = -148, -- last combat: derived Blightfall hit (estimated)
-  predicted = -160, -- last combat: average prediction
+  vp = -97, -- Virulent Plague / Dread Plague: real time on the target
+  vpBar = -108, -- (PlagueAuras.lua), modelled time as fallback
+  dp = -114,
+  dpBar = -125,
+  timing = -133,
+  separator = -147,
+  erupts = -153, -- erupt total (damage meter; locked in combat)
+  real = -165, -- last combat: derived Blightfall hit (estimated)
+  predicted = -177, -- last combat: average prediction
 }
-local FRAME_HEIGHT = 176
+local FRAME_HEIGHT = 193
 local COLORS = {
-  background = { 0.035, 0.045, 0.065, 0.70 }, -- 30 % transparent
+  background = { 0.035, 0.045, 0.065 }, -- alpha from the transparency option
   border = { 0.20, 0.25, 0.34, 1 },
   title = { 0.72, 0.80, 0.92 },
-  muted = { 0.55, 0.60, 0.68 },
-  dim = { 0.36, 0.40, 0.46 },
+  muted = { 0.55, 0.60, 0.68 }, -- overwritten in place, see TEXT_TONES
+  dim = { 0.36, 0.40, 0.46 }, -- overwritten in place, see TEXT_TONES
   number = { 1, 1, 1 },
   numberInactive = { 0.42, 0.45, 0.50 },
   barTrack = { 1, 1, 1, 0.07 },
@@ -371,6 +377,13 @@ local COLORS = {
   now = { 0.55, 0.90, 1.00 },
   warn = { 0.95, 0.70, 0.40 },
 }
+-- Muted/dim text and bar track on a solid vs. a see-through background.
+local TEXT_TONES = {
+  solid = { muted = { 0.55, 0.60, 0.68 }, dim = { 0.36, 0.40, 0.46 }, barTrack = 0.07 },
+  clear = { muted = { 0.80, 0.84, 0.90 }, dim = { 0.62, 0.66, 0.72 }, barTrack = 0.25 },
+}
+-- Background transparency above which the see-through tones and outlines apply.
+local CLEAR_THRESHOLD = 0.5
 
 local function Color(c)
   return c[1], c[2], c[3], c[4] or 1
@@ -384,7 +397,7 @@ frame:EnableMouse(true)
 frame:RegisterForDrag("LeftButton")
 frame:SetClampedToScreen(true)
 frame:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
-frame:SetBackdropColor(Color(COLORS.background))
+frame:SetBackdropColor(COLORS.background[1], COLORS.background[2], COLORS.background[3], 0.7)
 frame:SetBackdropBorderColor(Color(COLORS.border))
 frame:Hide()
 
@@ -427,6 +440,9 @@ do
   fade:SetDuration(1.2)
 end
 
+-- Every font string with its font, so ApplyAppearance can switch outlines.
+local texts = {}
+
 -- Single-line text anchored to a row. justify "RIGHT" anchors to the right edge.
 local function Text(template, size, flags, y, justify, inset, width)
   local text = frame:CreateFontString(nil, "OVERLAY", template)
@@ -434,6 +450,9 @@ local function Text(template, size, flags, y, justify, inset, width)
   if path and size then
     pcall(text.SetFont, text, path, size, flags or "")
   end
+  texts[#texts + 1] = { text = text, path = path, size = size, flags = flags or "" }
+  text:SetShadowColor(0, 0, 0, 1)
+  text:SetShadowOffset(1, -1)
   if justify == "RIGHT" then
     text:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -PAD, y)
   else
@@ -445,12 +464,36 @@ local function Text(template, size, flags, y, justify, inset, width)
   return text
 end
 
+-- Styles a font string created outside this file (the aura container's
+-- duration texts) like the table values, once. It is NOT kept in the
+-- readability list: after the hand-over the container denies addon code any
+-- access while auras are secret (Mythic+, combat), so it gets the outline
+-- for every transparency right away and is never touched again.
+local function AdoptValueText(text)
+  local path = text:GetFont()
+  if path then
+    pcall(text.SetFont, text, path, 9, "OUTLINE")
+  end
+  text:SetShadowColor(0, 0, 0, 1)
+  text:SetShadowOffset(1, -1)
+  text:SetTextColor(Color(COLORS.title))
+  text:SetJustifyH("RIGHT")
+  text:SetWordWrap(false)
+end
+
+-- Rows with a fixed label (locale key), re-labelled on a language switch and
+-- re-coloured on a transparency change.
+local labelledRows = {}
+
 -- One table row: label left (muted), value right (bright).
-local function TableRow(y, label)
-  local row = {}
+local function TableRow(y, labelKey)
+  local row = { labelKey = labelKey }
   row.label = Text("GameFontHighlightSmall", 9, nil, y, "LEFT", PAD, LABEL_WIDTH)
   row.label:SetTextColor(Color(COLORS.muted))
-  row.label:SetText(label or "")
+  row.label:SetText(labelKey and L[labelKey] or "")
+  if labelKey then
+    labelledRows[#labelledRows + 1] = row
+  end
   row.value = Text("GameFontHighlightSmall", 9, nil, y, "RIGHT", nil, VALUE_WIDTH)
   row.value:SetTextColor(Color(COLORS.title))
   return row
@@ -477,11 +520,13 @@ local estimateLine =
 
 local signalLine = Text("GameFontNormal", 10, nil, ROW.signal)
 
-local enemiesRow = TableRow(ROW.enemies, L.ROW_ENEMIES)
-local perTargetRow = TableRow(ROW.perTarget, L.ROW_PER_TARGET)
+local enemiesRow = TableRow(ROW.enemies, "ROW_ENEMIES")
+local perTargetRow = TableRow(ROW.perTarget, "ROW_PER_TARGET")
 
-local function Bar(y, barY, label, color)
-  local row = TableRow(y, label)
+local barTracks = {}
+
+local function Bar(y, barY, labelKey, color)
+  local row = TableRow(y, labelKey)
   local bar = CreateFrame("StatusBar", nil, frame)
   bar:SetStatusBarTexture(WHITE)
   bar:SetStatusBarColor(Color(color))
@@ -494,12 +539,14 @@ local function Bar(y, barY, label, color)
   track:SetTexture(WHITE)
   track:SetAllPoints()
   track:SetVertexColor(Color(COLORS.barTrack))
+  barTracks[#barTracks + 1] = track
   bar.valueText = row.value
   return bar
 end
 
-local dtBar = Bar(ROW.dt, ROW.dtBar, L.BAR_DT, COLORS.barDT)
-local plagueBar = Bar(ROW.plagues, ROW.plagueBar, L.BAR_PLAGUES, COLORS.barPlagues)
+local dtBar = Bar(ROW.dt, ROW.dtBar, "BAR_DT", COLORS.barDT)
+local vpBar = Bar(ROW.vp, ROW.vpBar, "BAR_VP", COLORS.barPlagues)
+local dpBar = Bar(ROW.dp, ROW.dpBar, "BAR_DP", COLORS.barPlagues)
 
 local timingRow = TableRow(ROW.timing)
 
@@ -511,19 +558,21 @@ resultSeparator:SetHeight(1)
 resultSeparator:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD, ROW.separator)
 resultSeparator:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -PAD, ROW.separator)
 
-local eruptsRow = TableRow(ROW.erupts, L.ROW_ERUPTS)
-local realRow = TableRow(ROW.real, L.ROW_REAL)
-local predictedRow = TableRow(ROW.predicted, L.ROW_PREDICTED)
+local eruptsRow = TableRow(ROW.erupts, "ROW_ERUPTS")
+local realRow = TableRow(ROW.real, "ROW_REAL")
+local predictedRow = TableRow(ROW.predicted, "ROW_PREDICTED")
 
--- Signal text + colour per state; "now" states share the cool highlight.
+-- Signal text (locale key) + colour per state; "now" states share the cool
+-- highlight. Keys are resolved at render time, so a language switch applies
+-- on the next update.
 local SIGNAL_TEXT = {
-  idle = { L.SIGNAL_IDLE, COLORS.dim },
-  ["no-plagues"] = { L.SIGNAL_NO_PLAGUES, COLORS.warn },
-  charging = { L.SIGNAL_CHARGING, COLORS.barDT },
-  ["now-dt-ending"] = { L.SIGNAL_NOW_DT_ENDING, COLORS.now },
-  ["now-soul-reaper"] = { L.SIGNAL_NOW_SOUL_REAPER, COLORS.now },
-  ["now-dt-ready"] = { L.SIGNAL_NOW_DT_READY, COLORS.now },
-  ["now-plagues-expiring"] = { L.SIGNAL_NOW_PLAGUES_EXPIRING, COLORS.now },
+  idle = { "SIGNAL_IDLE", COLORS.dim },
+  ["no-plagues"] = { "SIGNAL_NO_PLAGUES", COLORS.warn },
+  charging = { "SIGNAL_CHARGING", COLORS.barDT },
+  ["now-dt-ending"] = { "SIGNAL_NOW_DT_ENDING", COLORS.now },
+  ["now-soul-reaper"] = { "SIGNAL_NOW_SOUL_REAPER", COLORS.now },
+  ["now-dt-ready"] = { "SIGNAL_NOW_DT_READY", COLORS.now },
+  ["now-plagues-expiring"] = { "SIGNAL_NOW_PLAGUES_EXPIRING", COLORS.now },
 }
 
 local function SetBar(bar, left, total)
@@ -548,7 +597,7 @@ local function Render(result)
   lastRendered = result
   local signal = SIGNAL_TEXT[result.signal] or SIGNAL_TEXT.idle
   local isNow = type(result.signal) == "string" and result.signal:find("^now%-") ~= nil
-  signalLine:SetText(signal[1])
+  signalLine:SetText(L[signal[1]])
   signalLine:SetTextColor(Color(signal[2]))
   accent:SetVertexColor(Color(signal[2]))
   if isNow then
@@ -583,8 +632,20 @@ local function Render(result)
   end
 
   SetBar(dtBar, result.dtLeft, result.dtTotal)
-  local plagueLeft = math.max(result.remVP, result.remDP)
-  SetBar(plagueBar, plagueLeft, math.max(result.plagueDuration or 0, plagueLeft))
+  -- Plague rows: with a hostile target the real debuff time comes from
+  -- Blizzard's aura container (PlagueAuras.lua) and the modelled values stay
+  -- empty underneath; without one, or without the container, the model shows.
+  local Auras = ns.PlagueAuras
+  if Auras and Auras.ShowsTarget() then
+    vpBar:SetValue(0)
+    vpBar.valueText:SetText("")
+    dpBar:SetValue(0)
+    dpBar.valueText:SetText("")
+  else
+    local duration = result.plagueDuration or 0
+    SetBar(vpBar, result.remVP, math.max(duration, result.remVP))
+    SetBar(dpBar, result.remDP, math.max(duration, result.remDP))
+  end
 
   -- One status row: while the Soul Reaper debuff runs (and adds 20 % to the
   -- estimate) show that, otherwise the Dark Transformation cooldown.
@@ -633,7 +694,6 @@ local function DiagnosticsText()
   local entries, dropped = Log.Count()
   local factors = Model.factors
   local estimating = lastRendered and lastRendered.estimateSingle ~= nil
-  local db = Log.DB()
   local logText = L.STATE_OFF
   if Log.IsEnabled() then
     logText = tostring(entries) .. (dropped > 0 and string.format(L.DROPPED_FMT, dropped) or "")
@@ -643,24 +703,21 @@ local function DiagnosticsText()
     estimating and L.MODE_ESTIMATE or L.MODE_TIMING,
     factors.samples > 0 and string.format("x%.1f (%d)", factors.vp, factors.samples) or L.CALIB_NEW,
     logText,
-    (db and db.combatOnly == true) and L.WINDOW_COMBAT_ONLY or L.WINDOW_ALWAYS
+    ns.Settings.Get("combatOnly") and L.WINDOW_COMBAT_ONLY or L.WINDOW_ALWAYS
   )
 end
 
--- Voice cue "Go! Go!" when the signal turns to "now". Plays once per switch
--- into a now-state; on by default, toggled with /ibt sound.
-local GO_SOUND = "Interface\\AddOns\\isiBlightfallTracker\\sounds\\GoGo.ogg"
-
+-- Voice cue when the signal turns to "now". Plays once per switch into a
+-- now-state; sound and channel are chosen in the options (see Sound.lua).
 local function IsNowSignal(signal)
   return type(signal) == "string" and signal:find("^now%-") ~= nil
 end
 
 local function PlayGoSound(signal)
-  if Log.DB() and Log.DB().soundEnabled == false then
-    return
+  local played, choice, channel = ns.Sound.Play(false)
+  if choice then
+    Log.Add("sound", { signal = signal, played = played, choice = choice, channel = channel })
   end
-  local ok, willPlay = pcall(PlaySoundFile, GO_SOUND, "Master")
-  Log.Add("sound", { signal = signal, ok = ok, willPlay = ok and ns.Plain(willPlay) or nil })
 end
 
 local elapsedSinceRender = 0
@@ -732,32 +789,180 @@ frame:SetScript("OnUpdate", function(self, elapsed)
   end
 end)
 
+-- Position: the window is anchored by its top-left corner, stored in UIParent
+-- units ({ left = x, top = y }), so a size change keeps the left edge in place
+-- and the window grows to the right and down.
+local function TopLeft()
+  local left, top = frame:GetLeft(), frame:GetTop()
+  if type(left) ~= "number" or type(top) ~= "number" then
+    return nil
+  end
+  local scale = frame:GetScale()
+  return left * scale, top * scale
+end
+
+local function PlaceTopLeft(left, top)
+  local scale = frame:GetScale()
+  frame:ClearAllPoints()
+  frame:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left / scale, top / scale)
+end
+
+local function SavePosition()
+  local left, top = TopLeft()
+  if left and Log.DB() then
+    Log.DB().position = { left = left, top = top }
+  end
+  return left, top
+end
+
 frame:SetScript("OnDragStart", frame.StartMoving)
 frame:SetScript("OnDragStop", function(self)
   self:StopMovingOrSizing()
-  local point, _, relativePoint, x, y = self:GetPoint()
-  Log.DB().position = { point, relativePoint, x, y }
+  local left, top = SavePosition()
+  if left then
+    PlaceTopLeft(left, top)
+  end
 end)
 
+-- Saved coordinates must be finite numbers (no NaN / +-inf from a damaged
+-- file) within a generous screen range.
+local function IsCoordinate(value)
+  return type(value) == "number" and value == value and value > -10000 and value < 10000
+end
+
+local ANCHOR_POINTS = {
+  TOPLEFT = true,
+  TOP = true,
+  TOPRIGHT = true,
+  LEFT = true,
+  CENTER = true,
+  RIGHT = true,
+  BOTTOMLEFT = true,
+  BOTTOM = true,
+  BOTTOMRIGHT = true,
+}
+
+-- A damaged saved position must not break the login: anything invalid or
+-- rejected by the client falls back to the default position.
 local function RestorePosition()
-  local pos = Log.DB() and Log.DB().position
-  if type(pos) == "table" and pos[1] then
+  local db = Log.DB()
+  local pos = db and db.position
+  if type(pos) ~= "table" then
+    return
+  end
+  local ok
+  if IsCoordinate(pos.left) and IsCoordinate(pos.top) then
+    ok = pcall(PlaceTopLeft, pos.left, pos.top)
+  elseif ANCHOR_POINTS[pos[1]] and ANCHOR_POINTS[pos[2]] and IsCoordinate(pos[3]) and IsCoordinate(pos[4]) then
+    -- Up to 0.6.0: { point, relativePoint, x, y }; converted on the next save.
+    ok = pcall(function()
+      frame:ClearAllPoints()
+      frame:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
+    end)
+  end
+  if not ok then
     frame:ClearAllPoints()
-    frame:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
+    frame:SetPoint("CENTER", UIParent, "CENTER", 0, -180)
+    db.position = nil
+    Log.Add("position_reset", { reason = "invalid saved position" })
   end
 end
 
--- Option "combat only" (/ibt combat on|off, off by default): the window is
--- then shown only while in combat. The frame is not secure, so showing and
--- hiding it in combat is allowed.
-local function IsCombatOnly()
-  local db = Log.DB()
-  return db ~= nil and db.combatOnly == true
+local function ResetPosition()
+  frame:ClearAllPoints()
+  frame:SetPoint("CENTER", UIParent, "CENTER", 0, -180)
+  if Log.DB() then
+    Log.DB().position = nil
+  end
 end
 
-local function UpdateVisibility()
-  frame:SetShown(active and (inCombat or not IsCombatOnly()))
+-- Text outline and tones for the current background transparency.
+local function ApplyReadability(transparency)
+  local clear = transparency > CLEAR_THRESHOLD
+  local tones = clear and TEXT_TONES.clear or TEXT_TONES.solid
+  for i = 1, 3 do
+    COLORS.muted[i] = tones.muted[i]
+    COLORS.dim[i] = tones.dim[i]
+  end
+  COLORS.barTrack[4] = tones.barTrack
+  for _, t in ipairs(texts) do
+    if t.path and t.size then
+      local flags = t.flags
+      if clear and flags == "" then
+        flags = "OUTLINE"
+      end
+      pcall(t.text.SetFont, t.text, t.path, t.size, flags)
+    end
+  end
+  for _, row in ipairs(labelledRows) do
+    row.label:SetTextColor(Color(COLORS.muted))
+  end
+  for _, track in ipairs(barTracks) do
+    track:SetVertexColor(Color(COLORS.barTrack))
+  end
 end
+
+-- Appearance from the options: size, background transparency, border and
+-- lock. A locked window ignores the mouse entirely (no drag, click-through).
+-- The size changes around the top-left corner (see TopLeft).
+local function ApplyAppearance()
+  local Settings = ns.Settings
+  local scale = Settings.Get("scale")
+  local left, top
+  if frame:GetScale() ~= scale then
+    left, top = TopLeft()
+  end
+  frame:SetScale(scale)
+  if left then
+    PlaceTopLeft(left, top)
+    SavePosition()
+  end
+  local transparency = Settings.Get("bgTransparency")
+  local bg = COLORS.background
+  frame:SetBackdropColor(bg[1], bg[2], bg[3], 1 - transparency)
+  ApplyReadability(transparency)
+  local border = COLORS.border
+  frame:SetBackdropBorderColor(border[1], border[2], border[3], Settings.Get("showBorder") and 1 or 0)
+  frame:EnableMouse(not Settings.Get("locked"))
+end
+
+-- Option "combat only" (off by default): the window is then shown only while
+-- in combat. The frame is not secure, so showing and hiding it in combat is
+-- allowed.
+local function UpdateVisibility()
+  frame:SetShown(active and (inCombat or not ns.Settings.Get("combatOnly")))
+end
+
+-- Language from the options: fixed row labels now, everything else on the
+-- next render.
+local function ApplyLanguage()
+  ns.SetLanguage(ns.Settings.Get("language"))
+  for _, row in ipairs(labelledRows) do
+    row.label:SetText(L[row.labelKey])
+  end
+  if lastRendered then
+    Render(lastRendered)
+  end
+end
+
+-- Used by the options page (Options.lua) and the aura container
+-- (PlagueAuras.lua).
+ns.UI = {
+  frame = frame,
+  PAD = PAD,
+  VALUE_WIDTH = VALUE_WIDTH,
+  WHITE = WHITE,
+  barColor = COLORS.barPlagues,
+  plagueRows = {
+    { key = "vp", spellID = SPELL.VIRULENT_PLAGUE, y = ROW.vp, barY = ROW.vpBar },
+    { key = "dp", spellID = SPELL.DREAD_PLAGUE, y = ROW.dp, barY = ROW.dpBar },
+  },
+  AdoptValueText = AdoptValueText,
+  ApplyAppearance = ApplyAppearance,
+  ApplyLanguage = ApplyLanguage,
+  UpdateVisibility = UpdateVisibility,
+  ResetPosition = ResetPosition,
+}
 
 local function UpdateActivation(reason)
   local shouldBeActive = IsUnholy()
@@ -793,6 +998,7 @@ SafeRegister("ENCOUNTER_END")
 SafeRegister("CHALLENGE_MODE_START")
 SafeRegister("CHALLENGE_MODE_COMPLETED")
 SafeRegister("ADDON_RESTRICTION_STATE_CHANGED")
+SafeRegister("PLAYER_TARGET_CHANGED")
 events:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
 
 local function OnPlayerCast(spellID)
@@ -850,12 +1056,26 @@ local function OnEvent(_, event, ...)
       Log.StartSession()
     end
     Model.LoadFactors(Log.DB().factors)
+    ApplyLanguage()
     RestorePosition()
+    ApplyAppearance()
+    if ns.PlagueAuras then
+      Log.Add("plague_auras", { status = ns.PlagueAuras.Setup(ns.UI) })
+    end
+    if ns.Options then
+      ns.Options.Register()
+    end
     if C_Spell and C_Spell.RequestLoadSpellData then
       pcall(C_Spell.RequestLoadSpellData, SPELL.VIRULENT_PLAGUE)
       pcall(C_Spell.RequestLoadSpellData, SPELL.DREAD_PLAGUE)
     end
     UpdateActivation("login")
+    return
+  end
+  if event == "PLAYER_TARGET_CHANGED" then
+    if ns.PlagueAuras then
+      ns.PlagueAuras.OnTargetChanged()
+    end
     return
   end
   if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_SPECIALIZATION_CHANGED" then
@@ -890,6 +1110,9 @@ local function OnEvent(_, event, ...)
   elseif event == "PLAYER_REGEN_ENABLED" then
     inCombat = false
     UpdateVisibility()
+    if ns.PlagueAuras and ns.PlagueAuras.IsDeferred() then
+      Log.Add("plague_auras", { status = ns.PlagueAuras.Setup(ns.UI) })
+    end
     local calibration = Model.calibration
     Log.Add("combat_end", {
       combat = combatIndex,
@@ -947,14 +1170,17 @@ SLASH_ISIBLIGHTFALL1 = "/ibt"
 SlashCmdList.ISIBLIGHTFALL = Guard("Slash", function(message)
   message = (message or ""):lower()
   if message == "reset" then
-    frame:ClearAllPoints()
-    frame:SetPoint("CENTER", UIParent, "CENTER", 0, -180)
-    Log.DB().position = nil
+    ResetPosition()
+  elseif message == "options" or message == "optionen" or message == "config" then
+    if not (ns.Options and ns.Options.Open()) then
+      print(addonName .. ": " .. L.OPTIONS_UNAVAILABLE)
+    end
   elseif message == "sound" then
-    Log.DB().soundEnabled = Log.DB().soundEnabled == false
-    print(addonName .. ": " .. (Log.DB().soundEnabled and L.SOUND_ON or L.SOUND_OFF))
-    if Log.DB().soundEnabled then
-      pcall(PlaySoundFile, GO_SOUND, "Master")
+    local enabled = not ns.Settings.Get("soundEnabled")
+    ns.Settings.Set("soundEnabled", enabled)
+    print(addonName .. ": " .. (enabled and L.SOUND_ON or L.SOUND_OFF))
+    if enabled then
+      ns.Sound.Play(true)
     end
   elseif message == "log on" or message == "log an" then
     Log.SetEnabled(true)
@@ -964,11 +1190,11 @@ SlashCmdList.ISIBLIGHTFALL = Guard("Slash", function(message)
     Log.SetEnabled(false)
     print(addonName .. ": " .. L.LOG_OFF)
   elseif message == "combat on" or message == "combat an" then
-    Log.DB().combatOnly = true
+    ns.Settings.Set("combatOnly", true)
     UpdateVisibility()
     print(addonName .. ": " .. L.COMBAT_ONLY_ON)
   elseif message == "combat off" or message == "combat aus" then
-    Log.DB().combatOnly = false
+    ns.Settings.Set("combatOnly", false)
     UpdateVisibility()
     print(addonName .. ": " .. L.COMBAT_ONLY_OFF)
   elseif message == "test" then

@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global, lowercase-global
+-- Test script: runs outside WoW with standard Lua and stubs WoW globals.
 -- End-to-end harness: loads Log/Model/Core with a stubbed WoW client and
 -- replays a key. MODE=plain (dummy) or MODE=secret (worst-case M+).
 local dir, MODE = arg[1], arg[2] or "secret"
@@ -58,7 +60,7 @@ print = function() end
 dofile((arg[0]:match("^(.*)[/\\]") or ".") .. "/frame_stub.lua")
 
 local ns = {}
-for _, file in ipairs({ "Locale.lua", "Log.lua", "Model.lua", "Core.lua" }) do
+for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
   assert(loadfile(dir .. "/" .. file))("isiBlightfallTracker", ns)
 end
 local display, events

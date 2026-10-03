@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global, lowercase-global
+-- Test script: runs outside WoW with standard Lua and stubs WoW globals.
 local ns = {}
 local function load(path) local chunk = assert(loadfile(path)); chunk("isiBlightfallTracker", ns) end
 GetTime = function() return 0 end

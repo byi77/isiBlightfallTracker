@@ -28,6 +28,11 @@ local EXTENSION_BY_SPELL = {
   [445513] = 1, -- Death Coil (variant)
   [207317] = 1, -- Epidemic
   [1237172] = 1, -- Epidemic (variant)
+  -- Forbidden Knowledge replaces Death Coil with Necrotic Coil and Epidemic
+  -- with Graveyard; both run the same impact effects (SimC necrotic_coil_t /
+  -- graveyard_t -> unholy_rp_impact_effects).
+  [1242174] = 1, -- Necrotic Coil
+  [383269] = 1, -- Graveyard
   [1247378] = 3, -- Putrefy (Blightburst)
   [1277016] = 3, -- Putrefy single target (Blightburst)
   [390220] = 3, -- Putrefy area (Blightburst)
@@ -52,13 +57,15 @@ local DT_EXTENDERS = {
   [445513] = true, -- Death Coil (variant)
   [207317] = true, -- Epidemic
   [1237172] = true, -- Epidemic (variant)
+  [1242174] = true, -- Necrotic Coil (Forbidden Knowledge)
+  [383269] = true, -- Graveyard (Forbidden Knowledge)
 }
 local ETERNAL_AGONY_SECONDS = 1
 
 -- Epidemic only makes sense with several plagued enemies. Its casts are plain
 -- and therefore a reliable multi-target marker even when the nameplate count
 -- misses enemies (training dummies, hidden nameplates).
-local EPIDEMIC_SPELLS = { [207317] = true, [1237172] = true }
+local EPIDEMIC_SPELLS = { [207317] = true, [1237172] = true, [383269] = true } -- 383269: Graveyard
 
 local SOUL_REAPER_SPELLS = { [343294] = true, [448229] = true }
 local SOUL_REAPER_DEBUFF_SECONDS = 8
@@ -72,9 +79,27 @@ local REAPING_TALENT = 377514
 local SOUL_REAPER_ERUPT_BONUS = 0.20
 
 -- Returns true/false, or nil when the client offers no way to tell.
+-- C_SpellBook.IsSpellKnown (12.x). The global IsPlayerSpell only exists in
+-- Blizzard's deprecation fallbacks (CVar loadDeprecationFallbacks) and is the
+-- last resort; without either the talent stays unknown (nil).
+local function SpellKnownFunction()
+  local spellBook = rawget(_G, "C_SpellBook")
+  if type(spellBook) == "table" and type(spellBook.IsSpellKnown) == "function" then
+    local bank = Enum and Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Player or 0
+    return function(spellID)
+      return spellBook.IsSpellKnown(spellID, bank)
+    end
+  end
+  local legacy = rawget(_G, "IsPlayerSpell")
+  if type(legacy) == "function" then
+    return legacy
+  end
+  return nil
+end
+
 function Model.HasReapingTalent()
-  local check = rawget(_G, "IsPlayerSpell")
-  if type(check) ~= "function" then
+  local check = SpellKnownFunction()
+  if not check then
     return nil
   end
   local ok, known = pcall(check, REAPING_TALENT)
@@ -363,14 +388,19 @@ Model.factors = factors
 local FACTORS_VERSION = 2
 Model.FACTORS_VERSION = FACTORS_VERSION
 
+-- Learned factors are clamped to 0.5 .. 10 (see Model.Learn); anything else in
+-- the saved file (NaN, inf, wrong type) is damage and ignored.
+local function IsFactor(value)
+  return type(value) == "number" and value >= 0.5 and value <= 10
+end
+
 function Model.LoadFactors(saved)
-  if
-    type(saved) == "table"
-    and saved.version == FACTORS_VERSION
-    and type(saved.vp) == "number"
-    and type(saved.dp) == "number"
-  then
-    factors.vp, factors.dp, factors.samples = saved.vp, saved.dp, saved.samples or 0
+  if type(saved) == "table" and saved.version == FACTORS_VERSION and IsFactor(saved.vp) and IsFactor(saved.dp) then
+    local samples = saved.samples
+    if type(samples) ~= "number" or samples ~= samples or samples < 0 or samples > 1e6 then
+      samples = 0
+    end
+    factors.vp, factors.dp, factors.samples = saved.vp, saved.dp, math.floor(samples)
   end
 end
 

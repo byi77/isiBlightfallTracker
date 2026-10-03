@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global, lowercase-global
+-- Test script: runs outside WoW with standard Lua and stubs WoW globals.
 local ns = {}; GetLocale = function() return "deDE" end
 assert(loadfile(arg[1] .. "/Locale.lua"))("x", ns)
 local en, de = ns.LOCALE_TABLES.enUS, ns.LOCALE_TABLES.deDE

@@ -575,11 +575,17 @@ local SIGNAL_TEXT = {
   ["now-plagues-expiring"] = { "SIGNAL_NOW_PLAGUES_EXPIRING", COLORS.now },
 }
 
+-- Remaining time in whole seconds, rounded up like a countdown, so the table
+-- matches the plague rows filled by the game's own aura display ("19 s").
+local function Seconds(value)
+  return string.format(L.SECONDS_FMT, math.ceil(value))
+end
+
 local function SetBar(bar, left, total)
   if left and left > 0 and total and total > 0 then
     bar:SetMinMaxValues(0, total)
     bar:SetValue(math.min(left, total))
-    bar.valueText:SetText(string.format(L.SECONDS_FMT, left))
+    bar.valueText:SetText(Seconds(left))
   else
     bar:SetValue(0)
     bar.valueText:SetText("-")
@@ -651,13 +657,13 @@ local function Render(result)
   -- estimate) show that, otherwise the Dark Transformation cooldown.
   if result.soulReaperLeft > 0 then
     timingRow.label:SetText(result.soulReaperBonus and L.ROW_SOUL_REAPER_BONUS or L.ROW_SOUL_REAPER)
-    timingRow.value:SetText(string.format(L.SECONDS_FMT, result.soulReaperLeft))
+    timingRow.value:SetText(Seconds(result.soulReaperLeft))
     timingRow.label:SetTextColor(Color(COLORS.now))
     timingRow.value:SetTextColor(Color(COLORS.now))
   elseif result.dtReadyIn then
     timingRow.label:SetText(L.ROW_DT_CD)
     timingRow.value:SetText(
-      result.dtReadyIn > 0 and string.format(L.WHOLE_SECONDS_FMT, result.dtReadyIn) or L.VALUE_READY
+      result.dtReadyIn > 0 and Seconds(result.dtReadyIn) or L.VALUE_READY
     )
     timingRow.label:SetTextColor(Color(COLORS.muted))
     timingRow.value:SetTextColor(Color(COLORS.title))

@@ -14,6 +14,7 @@
 - The "Go! Go!" voice cue is about 11 dB louder (re-mastered from -21.6 to -10.5 LUFS).
 - Invalid saved settings fall back to their defaults.
 - On-screen texts are written out in full, no abbreviations ("Actual (estimated)", "Dark Transformation", "Next Transformation", "Soul Reaper +20%", "NOW: Transformation ends"). The window is wider for that (170 instead of 130 px).
+- All times are shown in whole seconds ("19 s", rounded up like a countdown), the same format as the plague rows filled by the game's own aura display.
 - Readability: all texts have a drop shadow; above 50 % background transparency they also get an outline and the grey labels brighten.
 - A size change keeps the window's left edge in place (the window grows to the right and down). The position is now saved as the top-left corner; older saved positions keep working.
 

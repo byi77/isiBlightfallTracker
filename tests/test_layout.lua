@@ -24,7 +24,7 @@ local SLOTS = {
       return { L.ROW_ENEMIES, L.ROW_PER_TARGET, L.ESTIMATE_OFF, L.BAR_DT, L.BAR_VP, L.BAR_DP, L.ROW_SOUL_REAPER,
         L.ROW_SOUL_REAPER_BONUS, L.ROW_DT_CD, L.ROW_ERUPTS, L.ROW_REAL, L.ROW_PREDICTED } end },
   { "value", VALUE, 9, function(L)
-      return { "~12.34M", "21", string.format(L.SECONDS_FMT, 123.4), string.format(L.WHOLE_SECONDS_FMT, 44),
+      return { "~12.34M", "21", string.format(L.SECONDS_FMT, 124), string.format(L.SECONDS_FMT, 44),
         L.VALUE_READY, L.VALUE_LOCKED } end },
 }
 

@@ -171,7 +171,7 @@ ns, display = Boot({ target = nil })
 ns.Model.OnPlayerCast(77575, 1000)
 Render(display)
 vpValue = RowValue("Virulente Seuche")
-check(vpValue and vpValue.text == "18.0s", "no target: modelled plague time shown (" .. tostring(vpValue and vpValue.text) .. ")")
+check(vpValue and vpValue.text == "18 s", "no target: modelled plague time shown (" .. tostring(vpValue and vpValue.text) .. ")")
 
 -- A secret attackability answer is never tested; the container is trusted.
 ns, display = Boot({ target = "secret" })
@@ -190,7 +190,7 @@ check(ns.PlagueAuras.Status() == "no-addons-api" and CONTAINER == nil, "no addon
 ns.Model.OnPlayerCast(77575, 1000)
 Render(display)
 vpValue = RowValue("Virulente Seuche")
-check(vpValue and vpValue.text == "18.0s", "no container: modelled plague time shown")
+check(vpValue and vpValue.text == "18 s", "no container: modelled plague time shown")
 
 -- A failing button setup never escapes into Blizzard's code and leaves the
 -- model in charge.

@@ -35,10 +35,10 @@ first of these runs out:
   NOW: Transformation ends            signal
   Enemies                         12
   Per target                   ~115k
-  Dark Transformation           2.7s  + bar  time left
-  Virulent Plague              14.2s  + bar  real time left on your target
-  Dread Plague                 14.2s  + bar  (modelled without an enemy target)
-  Next Transformation            29s  or "Soul Reaper +20%  3.1s" while
+  Dark Transformation            3 s  + bar  time left
+  Virulent Plague              15 s  + bar  real time left on your target
+  Dread Plague                 15 s  + bar  (modelled without an enemy target)
+  Next Transformation           29 s  or "Soul Reaper +20%  4 s" while
                                       the Soul Reaper debuff runs
   --------------------------------
   Erupts                      ~4.25M  plague erupt damage of the last fight
@@ -66,7 +66,12 @@ RELIABLE (taken directly from the game or from your own casts):
   - Soul Reaper time                    8 s from your Soul Reaper cast
   - The "NOW" signal timing             rules above, from your own casts
   - Enemies                             enemies in combat with a VISIBLE
-                                        nameplate (turn on enemy nameplates)
+                                        nameplate (turn on enemy nameplates).
+                                        LIMITED on training dummies: the game
+                                        counts only one dummy nameplate, so a
+                                        multi-target dummy test shows 1 enemy
+                                        and a too low all-target value. Judge
+                                        multi-target in dungeon pulls.
   - Erupts (after combat)               Blizzard damage meter, exact
   - Virulent Plague / Dread Plague      real time left of YOUR plagues on
     (with an enemy target)              your target, shown by the game's

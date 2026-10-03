@@ -28,8 +28,7 @@ local enUS = {
   ROW_ERUPTS = "Erupts",
   ROW_REAL = "Actual (estimated)",
   ROW_PREDICTED = "Predicted",
-  SECONDS_FMT = "%.1fs",
-  WHOLE_SECONDS_FMT = "%.0fs",
+  SECONDS_FMT = "%d s", -- whole seconds, like the game's own aura timers
   VALUE_READY = "ready",
   VALUE_LOCKED = "locked",
   -- chat (/ibt)
@@ -119,8 +118,7 @@ local deDE = {
   ROW_ERUPTS = "Ausbrüche",
   ROW_REAL = "Ist (geschätzt)",
   ROW_PREDICTED = "Vorhersage",
-  SECONDS_FMT = "%.1fs",
-  WHOLE_SECONDS_FMT = "%.0fs",
+  SECONDS_FMT = "%d s", -- whole seconds, like the game's own aura timers
   VALUE_READY = "bereit",
   VALUE_LOCKED = "gesperrt",
   -- chat (/ibt)

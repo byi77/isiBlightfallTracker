@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased - Version 0.6.0
+## 2026-10-03 - Version 0.6.0
 
 ### Added
 - Options page in *Esc > Options > AddOns > isiBlightfallTracker* (also `/ibt options`).

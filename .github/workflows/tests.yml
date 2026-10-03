@@ -13,7 +13,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install Lua 5.4
         run: |
           set -euo pipefail
@@ -24,3 +24,13 @@ jobs:
           lua -v
       - name: Run offline tests
         run: bash tests/run_all.sh
+      # The game client runs Lua 5.1; the tests above run on 5.4. Syntax that
+      # only exists in 5.2+ (goto, //, bit operators) must fail here.
+      - name: Lua 5.1 syntax check (game client)
+        run: |
+          set -euo pipefail
+          sudo apt-get install -y -qq lua5.1
+          for file in $(awk '/^[^#].*\.lua[[:space:]]*$/ { sub(/\r$/, ""); print }' isiBlightfallTracker.toc); do
+            luac5.1 -p "${file}"
+            echo "Lua 5.1 OK: ${file}"
+          done

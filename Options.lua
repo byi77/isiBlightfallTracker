@@ -124,6 +124,11 @@ function Options.Register()
     Proxy(api, VarType.Boolean, "combatOnly", L.OPT_COMBAT_ONLY, UI.UpdateVisibility),
     L.OPT_COMBAT_ONLY_TIP
   )
+  api.CreateCheckbox(
+    category,
+    Proxy(api, VarType.Boolean, "readyOnly", L.OPT_READY_ONLY, UI.UpdateVisibility),
+    L.OPT_READY_ONLY_TIP
+  )
   api.CreateCheckbox(category, Proxy(api, VarType.Boolean, "locked", L.OPT_LOCKED, UI.ApplyAppearance), L.OPT_LOCKED_TIP)
   api.CreateCheckbox(
     category,

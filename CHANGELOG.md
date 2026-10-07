@@ -1,8 +1,12 @@
 # Changelog
 
-## Unreleased - Version 0.6.1
+## 2026-10-07 - Version 0.7.0
+
+### Added
+- Option "Show only when Blightfall is ready" (also `/ibt ready on|off`, German `/ibt bereit an|aus`; default: off): the window appears with Dark Transformation and hides again when you cast Blightfall. Can be combined with "Show only in combat".
 
 ### Changed
+- Blightfall estimate follows the hotfix of 2026-10-07: Blightfall now deals 100 % of the remaining plague damage (was 200 %), so all estimates are halved.
 - Boss fights: the "NOW" signal before the end of the Soul Reaper debuff now also fires with adds and Epidemic in the window, as in the simulation rotation (up to 3 enemies or a boss in the pull). Boss fights are recognised from the game's encounter start and end; a loading screen ends them. After a /reload in the middle of a boss fight the rule works as outside boss fights until the next encounter.
 
 ## 2026-10-03 - Version 0.6.0

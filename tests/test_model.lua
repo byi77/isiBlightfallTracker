@@ -20,9 +20,11 @@ M.OnPlayerCast(1233448, 1)        -- Dark Transformation -> ready
 local r = M.Evaluate(1)
 check(r.ready and r.signal == "charging", "ready and charging after DT")
 check(math.abs(r.remVP - 17) < 1e-9, "VP remaining 17s")
-local expected1 = 2 * (48168 + 12610) * 17 / 18
-check(math.abs(r.estimateSingle - expected1) < 1e-6, "single-target estimate = 2*(DP+VP)*rem/dur")
-check(r.enemies == 3 and math.abs(r.estimateAll - 2 * (48168 + 12610 * 3) * 17 / 18) < 1e-6, "all-target estimate uses 3 enemies")
+-- Hotfix 2026-10-07: Blightfall deals 100 % of the remaining plague damage (was 200 %).
+check(M.BLIGHTFALL_REMAINING_SHARE == 1.0, "Blightfall share is 100 % of the remaining plague damage")
+local expected1 = (48168 + 12610) * 17 / 18
+check(math.abs(r.estimateSingle - expected1) < 1e-6, "single-target estimate = (DP+VP)*rem/dur")
+check(r.enemies == 3 and math.abs(r.estimateAll - (48168 + 12610 * 3) * 17 / 18) < 1e-6, "all-target estimate uses 3 enemies")
 M.OnPlayerCast(47541, 2)          -- Death Coil +1
 check(math.abs(M.Evaluate(2).remVP - 17) < 1e-9, "Death Coil extends by 1s")
 M.OnPlayerCast(343294, 5)         -- Soul Reaper window 8s -> ends 13
@@ -51,7 +53,7 @@ check(math.abs(M.factors.vp - (stateBefore + 0.3 * (2 - stateBefore))) < 1e-9, "
 M.ResetCombatState()
 M.OnPlayerCast(77575, 100); M.OnPlayerCast(47541, 100); M.OnPlayerCast(47541, 100) -- 18 + 2 = 20s
 local r3 = M.Evaluate(100)
-check(math.abs(r3.estimateSingle - 2 * (48168 + 12610) * M.factors.vp * 20 / 18) < 1e-6, "estimate applies the VP factor to both plagues, remaining time uncapped")
+check(math.abs(r3.estimateSingle - (48168 + 12610) * M.factors.vp * 20 / 18) < 1e-6, "estimate applies the VP factor to both plagues, remaining time uncapped")
 -- 0.1.3: Epidemic casts mark a fight as multi-target even if nameplates show one enemy.
 M.ResetCalibration()
 M.NoteCastForCalibration(207317)
@@ -148,7 +150,7 @@ end
 M.SampleTooltips(); M.ResetCombatState()
 M.OnPlayerCast(77575, 700)
 local r4 = M.Evaluate(703.9) -- 14.1 s left
-check(math.abs(r4.estimateSingle - 2 * (19543 + 46149) * 2.49 * 14.1 / 18) < 1e-6, "pull-start estimate drops from 538k to ~256k")
+check(math.abs(r4.estimateSingle - (19543 + 46149) * 2.49 * 14.1 / 18) < 1e-6, "pull-start estimate drops from 269k to ~128k (100 % share)")
 print(("   (value: %d)"):format(math.floor(r4.estimateSingle)))
 -- 0.2.3: Soul Reaper debuff adds 20 % to the single-target share while active (Reaping known).
 IsPlayerSpell = function(id) return id == 377514 end; M.RefreshTalents()
@@ -156,12 +158,12 @@ UnitExists = function(u) return tonumber(u:match("%d+")) <= 3 end
 M.factors.vp = 1
 M.ResetCombatState(); M.OnPlayerCast(77575, 800); M.OnPlayerCast(343294, 800) -- SR until 808
 local withSR = M.Evaluate(804)
-local base = 2 * (46149 + 19543) * 14 / 18
+local base = (46149 + 19543) * 14 / 18
 check(math.abs(withSR.estimateSingle - base * 1.2) < 1e-6 and withSR.soulReaperBonus, "single target +20% while Soul Reaper debuff is up")
-local baseAll = 2 * (46149 + 19543 * 3) * 14 / 18
+local baseAll = (46149 + 19543 * 3) * 14 / 18
 check(math.abs(withSR.estimateAll - (baseAll + base * 0.2)) < 1e-6, "all-target adds the bonus once (SR target only)")
 local after = M.Evaluate(809)
-check(not after.soulReaperBonus and math.abs(after.estimateSingle - 2 * (46149 + 19543) * 9 / 18) < 1e-6, "bonus disappears when the debuff ends")
+check(not after.soulReaperBonus and math.abs(after.estimateSingle - (46149 + 19543) * 9 / 18) < 1e-6, "bonus disappears when the debuff ends")
 IsPlayerSpell = function() return false end; M.RefreshTalents()
 M.ResetCombatState(); M.OnPlayerCast(77575, 900); M.OnPlayerCast(343294, 900)
 check(not M.Evaluate(904).soulReaperBonus, "no bonus without Reaping")

@@ -13,7 +13,8 @@ Mythic+ keystones and raids.
 -----------------------
 Dark Transformation puts Blightfall on its button. Blightfall consumes your
 plagues (Virulent Plague on every enemy, Dread Plague on one enemy) within
-40 yards and deals 200 % of their REMAINING damage at once.
+40 yards and deals 100 % of their REMAINING damage at once (200 % until
+the hotfix of 2026-10-07).
 
 It does not store damage. You "charge" it by extending your plagues:
 Death Coil and Epidemic (and their Forbidden Knowledge versions Necrotic
@@ -132,14 +133,18 @@ Options page: Esc > Options > AddOns > isiBlightfallTracker (or /ibt options)
                   or any sound of an installed shared-media sound pack
     Channel:      Master (default), Effects, Dialog, Ambience, Music -
                   the cue follows that channel's volume slider
-  Window          show only in combat, lock, border, size,
-                  background transparency, reset position
+  Window          show only in combat, show only when Blightfall is
+                  ready (from Dark Transformation until you cast it),
+                  lock, border, size, background transparency,
+                  reset position
   Log             record a local log (default: off)
 
 Commands:
   /ibt                 mode, calibration, log and window setting
   /ibt options         open the options page
   /ibt combat on|off   show the window only in combat (default: off)
+  /ibt ready on|off    show the window only while Blightfall is ready
+                       (default: off; German alias: /ibt bereit an|aus)
   /ibt log on|off      record the log (default: off)
   /ibt sound           voice cue on/off (plays it once when switched on)
   /ibt test            run a self-test (written to the log if it is on)
@@ -210,7 +215,13 @@ in großen Packs nicht.
 Einstellungen: Esc > Optionen > AddOns > isiBlightfallTracker (oder
 /ibt optionen): Sprache (automatisch, English, Deutsch), Ansage an/aus, Sound (Sprache, Spielsounds oder Sounds aus
 einem Shared-Media-Soundpaket), Soundkanal (Standard Master), Testsound;
-Fenster nur im Kampf, sperren, Rahmen, Größe, Hintergrund-Transparenz,
-Position zurücksetzen; Log (Standard aus). Beim Ändern der Größe bleibt
-der linke Rand stehen. Ab 50 % Transparenz bekommt die Schrift eine Kontur.
-Befehle: /ibt combat an|aus, /ibt log an|aus, /ibt sound, /ibt test, /ibt reset.
+Fenster nur im Kampf, nur wenn Seuchensturz bereit (ab Dunkler
+Verwandlung bis zum Zünden), sperren, Rahmen, Größe, Hintergrund-
+Transparenz, Position zurücksetzen; Log (Standard aus). Beim Ändern der
+Größe bleibt der linke Rand stehen. Ab 50 % Transparenz bekommt die
+Schrift eine Kontur.
+Befehle: /ibt combat an|aus, /ibt bereit an|aus, /ibt log an|aus,
+/ibt sound, /ibt test, /ibt reset.
+
+Seuchensturz verursacht seit dem Hotfix vom 2026-10-07 100 % des
+restlichen Seuchenschadens (vorher 200 %); die Schätzung ist angepasst.

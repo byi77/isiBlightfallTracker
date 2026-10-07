@@ -13,6 +13,7 @@ local DEFAULTS = {
   soundChoice = "gogo",
   soundChannel = "Master",
   combatOnly = false,
+  readyOnly = false, -- show the window only while Blightfall is available
   locked = false,
   scale = 1.0,
   bgTransparency = 0.3, -- 0 = opaque, 1 = invisible background
@@ -47,6 +48,9 @@ local VALIDATORS = {
     return VALID_CHANNEL[v] == true
   end,
   combatOnly = function(v)
+    return type(v) == "boolean"
+  end,
+  readyOnly = function(v)
     return type(v) == "boolean"
   end,
   locked = function(v)

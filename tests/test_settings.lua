@@ -70,7 +70,33 @@ check(not display.shown, "combat-only window hides when combat ends")
 SlashCmdList.ISIBLIGHTFALL("combat aus")
 check(db.combatOnly == false and display.shown, "/ibt combat aus (German alias) shows it again")
 
+-- Ready-only window: shown from Dark Transformation until Blightfall.
+SlashCmdList.ISIBLIGHTFALL("ready on")
+check(db.readyOnly == true and not display.shown, "/ibt ready on hides the window while Blightfall is not ready")
+Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-1", 1233448) -- Dark Transformation
+check(display.shown, "Dark Transformation shows the ready-only window")
+Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-2", 47541) -- Death Coil
+check(display.shown, "other casts keep it visible while Blightfall is ready")
+Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-3", 1271967) -- Blightfall
+check(not display.shown, "casting Blightfall hides the ready-only window")
+SlashCmdList.ISIBLIGHTFALL("combat on")
+Fire("PLAYER_REGEN_DISABLED")
+check(not display.shown, "combat-only + ready-only: hidden in combat until Blightfall is ready")
+Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-4", 1233448)
+check(display.shown, "combat-only + ready-only: shown in combat once ready")
+Fire("PLAYER_REGEN_ENABLED")
+check(not display.shown, "combat-only + ready-only: hidden out of combat even while ready")
+SlashCmdList.ISIBLIGHTFALL("combat off")
+check(display.shown, "ready-only alone: Blightfall still ready, window visible out of combat")
+Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-5", 1271967)
+SlashCmdList.ISIBLIGHTFALL("bereit aus") -- German alias
+check(db.readyOnly == false and display.shown, "/ibt bereit aus shows the window again")
+
 -- Settings survive a reload.
+db.readyOnly = true
+local ns3, display3 = Boot(db)
+check(not display3.shown and ns3.Settings.Get("readyOnly") == true, "ready-only setting persists after reload")
+db.readyOnly = false
 db.combatOnly = true
 db.logEnabled = true
 local ns2, display2 = Boot(db)

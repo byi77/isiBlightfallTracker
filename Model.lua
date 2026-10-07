@@ -77,6 +77,10 @@ local SOUL_REAPER_RULE_MAX_ENEMIES = 3
 local REAPING_TALENT = 377514
 -- Soul Reaper debuff 1241521 effect #3: +20 % on Virulent/Dread Plague (Erupt).
 local SOUL_REAPER_ERUPT_BONUS = 0.20
+-- Share of the remaining plague damage that Blightfall deals. Hotfix
+-- 2026-10-07: 100 % (was 200 %).
+local BLIGHTFALL_REMAINING_SHARE = 1.0
+Model.BLIGHTFALL_REMAINING_SHARE = BLIGHTFALL_REMAINING_SHARE
 
 -- Returns true/false, or nil when the client offers no way to tell.
 -- C_SpellBook.IsSpellKnown (12.x). The global IsPlayerSpell only exists in
@@ -516,9 +520,9 @@ function Model.Evaluate(now)
     -- factors.dp is still learned and logged for offline analysis.
     local dpPart = state.dpTotal * factors.vp * remDP / state.duration
     local vpPart = state.vpTotal * factors.vp * remVP / state.duration
-    result.estimateSingle = 2 * (dpPart + vpPart)
+    result.estimateSingle = BLIGHTFALL_REMAINING_SHARE * (dpPart + vpPart)
     local targets = math.max(result.enemies, remVP > 0 and 1 or 0)
-    result.estimateAll = 2 * (dpPart + vpPart * targets)
+    result.estimateAll = BLIGHTFALL_REMAINING_SHARE * (dpPart + vpPart * targets)
 
     -- Soul Reaper debuff (1241521, from Reaping): +20 % damage taken from
     -- both plague erupts, which is what Blightfall deals. It sits on the

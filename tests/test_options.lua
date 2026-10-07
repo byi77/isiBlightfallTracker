@@ -105,7 +105,7 @@ local function V(key) return "isiBlightfallTracker_" .. key end
 local ns, display = Boot("deDE", true)
 check(ADDON_CATEGORY ~= nil and ADDON_CATEGORY.name == "isiBlightfallTracker", "options page registered as addon category")
 local expected = { language = "dropdown", soundEnabled = "checkbox", soundChoice = "dropdown", soundChannel = "dropdown", combatOnly = "checkbox",
-  locked = "checkbox", showBorder = "checkbox", scale = "slider", bgTransparency = "slider", logEnabled = "checkbox" }
+  readyOnly = "checkbox", locked = "checkbox", showBorder = "checkbox", scale = "slider", bgTransparency = "slider", logEnabled = "checkbox" }
 for key, kind in pairs(expected) do
   local s = REGISTERED[V(key)]
   check(s ~= nil and s.kind == kind and type(s.name) == "string" and s.name ~= "", "control " .. key .. " (" .. kind .. ")")

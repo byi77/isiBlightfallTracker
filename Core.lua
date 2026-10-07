@@ -709,7 +709,8 @@ local function DiagnosticsText()
     estimating and L.MODE_ESTIMATE or L.MODE_TIMING,
     factors.samples > 0 and string.format("x%.1f (%d)", factors.vp, factors.samples) or L.CALIB_NEW,
     logText,
-    ns.Settings.Get("combatOnly") and L.WINDOW_COMBAT_ONLY or L.WINDOW_ALWAYS
+    (ns.Settings.Get("combatOnly") and L.WINDOW_COMBAT_ONLY or L.WINDOW_ALWAYS)
+      .. (ns.Settings.Get("readyOnly") and L.WINDOW_READY_ONLY_SUFFIX or "")
   )
 end
 
@@ -933,10 +934,16 @@ local function ApplyAppearance()
 end
 
 -- Option "combat only" (off by default): the window is then shown only while
--- in combat. The frame is not secure, so showing and hiding it in combat is
--- allowed.
+-- in combat. Option "ready only" (off by default): shown only while Blightfall
+-- is available (from Dark Transformation until Blightfall is cast). Both can
+-- be combined. The frame is not secure, so showing and hiding it in combat is
+-- allowed. A hidden frame gets no OnUpdate, so the cast handler calls this
+-- whenever readiness may have changed.
 local function UpdateVisibility()
-  frame:SetShown(active and (inCombat or not ns.Settings.Get("combatOnly")))
+  local Settings = ns.Settings
+  local combatOk = inCombat or not Settings.Get("combatOnly")
+  local readyOk = Model.state.ready or not Settings.Get("readyOnly")
+  frame:SetShown(active and combatOk and readyOk)
 end
 
 -- Language from the options: fixed row labels now, everything else on the
@@ -1031,7 +1038,14 @@ local function OnPlayerCast(spellID)
       Model.NoteBlightfallCast(headline)
     end
   end
+  local wasReady = Model.state.ready
   local effect = Model.OnPlayerCast(spellID, now)
+  if Model.state.ready ~= wasReady then
+    -- "Ready only" window: Dark Transformation shows it, Blightfall hides it.
+    UpdateVisibility()
+    -- Render on the next frame instead of showing the stale last state.
+    elapsedSinceRender = UI_INTERVAL
+  end
   if inCombat then
     Model.NoteCastForCalibration(spellID)
   end
@@ -1208,6 +1222,14 @@ SlashCmdList.ISIBLIGHTFALL = Guard("Slash", function(message)
     ns.Settings.Set("combatOnly", false)
     UpdateVisibility()
     print(addonName .. ": " .. L.COMBAT_ONLY_OFF)
+  elseif message == "ready on" or message == "bereit an" then
+    ns.Settings.Set("readyOnly", true)
+    UpdateVisibility()
+    print(addonName .. ": " .. L.READY_ONLY_ON)
+  elseif message == "ready off" or message == "bereit aus" then
+    ns.Settings.Set("readyOnly", false)
+    UpdateVisibility()
+    print(addonName .. ": " .. L.READY_ONLY_OFF)
   elseif message == "test" then
     local tooltip = SelfTest("manual")
     print(addonName .. ": " .. string.format(L.SELFTEST_FMT, tooltip.vpReason, tooltip.dpReason))

@@ -10,8 +10,10 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 
 ---
 
-## What's new in 0.6.1
+## What's new in 0.7.0
 
+- **Blightfall nerf (hotfix 2026-10-07):** Blightfall now deals 100 % of the remaining plague damage (was 200 %) - the estimate is updated accordingly
+- **New option "Show only when Blightfall is ready"** (also `/ibt ready on|off`): the window appears with Dark Transformation and hides when you cast Blightfall - big and visible when you need it, out of the way the rest of the time. Can be combined with "Show only in combat".
 - **Boss fights:** the "NOW" signal shortly before your Soul Reaper debuff ends now also fires when adds are up and you use Epidemic - just like the simulation rotation (up to 3 enemies, or any boss fight). Outside boss fights nothing changes.
 
 ## What's new in 0.6.0
@@ -40,7 +42,7 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 
 ## How Blightfall works (in short)
 
-Blightfall consumes your plagues within 40 yards and deals **200 % of their remaining damage** at once. It does not store damage - you *charge* it by extending your plagues (Death Coil, Epidemic, Putrefy with Blightburst, Vampiric Strike with Infliction of Sorrow). Guides and simulations press it shortly before **Dark Transformation**, the **Soul Reaper** debuff (up to 3 enemies, or any boss fight) or a trinket effect runs out. That is exactly what the signal follows.
+Blightfall consumes your plagues within 40 yards and deals **100 % of their remaining damage** at once (200 % until the hotfix of 2026-10-07). It does not store damage - you *charge* it by extending your plagues (Death Coil, Epidemic, Putrefy with Blightburst, Vampiric Strike with Infliction of Sorrow). Guides and simulations press it shortly before **Dark Transformation**, the **Soul Reaper** debuff (up to 3 enemies, or any boss fight) or a trinket effect runs out. That is exactly what the signal follows.
 
 ---
 
@@ -93,7 +95,7 @@ Open **Esc > Options > AddOns > isiBlightfallTracker** (or type `/ibt options`).
 |---|---|
 | General | language: automatic (game language), English, Deutsch |
 | Voice cue | on/off · sound (voice "Go! Go!", raid warning, ready check, alarm clock, boss whisper, shared-media sounds) · channel (Master, Effects, Dialog, Ambience, Music) · test button |
-| Window | show only in combat · lock · border · size (50-200 %) · background transparency (0-100 %) · reset position |
+| Window | show only in combat · show only when Blightfall is ready (from Dark Transformation until you cast it) · lock · border · size (50-200 %) · background transparency (0-100 %) · reset position |
 | Log | record a local log (default: off) |
 
 The cue follows the volume slider of the chosen channel in the game's sound settings. A size change keeps the window's left edge in place. Above 50 % background transparency all text gets an outline, so it stays readable over the game world.
@@ -105,6 +107,7 @@ The cue follows the volume slider of the chosen channel in the game's sound sett
 | `/ibt` | mode, calibration, log and window setting |
 | `/ibt options` | open the options page |
 | `/ibt combat on` / `off` | show the window only in combat (default: off) |
+| `/ibt ready on` / `off` | show the window only while Blightfall is ready (default: off) |
 | `/ibt log on` / `off` | record a local log (default: off) |
 | `/ibt sound` | voice cue on/off |
 | `/ibt test` | run a self-test |
@@ -131,6 +134,8 @@ Zeigt den **erwarteten Schaden von Seuchensturz**, gibt mit Signal und Ansage de
 
 **Warum geschätzt?** Seit Patch 12.0 verbirgt Blizzard Kampfdaten vor Addons: Auren auf Gegnern, deine Werte, den Damage Meter im Kampf und das Kampflog. Die Seuchen-Zeilen nutzen die spieleigene Aura-Anzeige, die die echte Zeit anzeigen, aber nicht an Addons weitergeben darf. Für die Schätzung rechnet das Addon deshalb mit deinen eigenen Zaubern, dem Live-Tooltip deiner Seuchen und einem selbst gelernten Korrekturfaktor. Seuchensturz hat im Damage Meter keine eigene Zeile - "Ist" ist darum ebenfalls gerechnet: im Einzelziel brauchbar, in großen Packs nicht. Das **Zündsignal** hängt davon nicht ab.
 
-**Einstellungen:** *Esc > Optionen > AddOns > isiBlightfallTracker* (oder `/ibt optionen`): Sprache (automatisch, English, Deutsch), Ansage an/aus, Sound (Sprache, Spielsounds oder Shared-Media-Sounds), Soundkanal (Standard Master), Testsound; Fenster nur im Kampf, sperren, Rahmen, Größe, Hintergrund-Transparenz, Position zurücksetzen; Log (Standard aus).
+**Einstellungen:** *Esc > Optionen > AddOns > isiBlightfallTracker* (oder `/ibt optionen`): Sprache (automatisch, English, Deutsch), Ansage an/aus, Sound (Sprache, Spielsounds oder Shared-Media-Sounds), Soundkanal (Standard Master), Testsound; Fenster nur im Kampf, nur wenn Seuchensturz bereit (ab Dunkler Verwandlung bis zum Zünden), sperren, Rahmen, Größe, Hintergrund-Transparenz, Position zurücksetzen; Log (Standard aus).
 
-**Befehle:** `/ibt combat an|aus`, `/ibt log an|aus`, `/ibt sound`, `/ibt test`, `/ibt reset`.
+**Seuchensturz** verursacht seit dem Hotfix vom 2026-10-07 **100 %** des restlichen Seuchenschadens (vorher 200 %); die Schätzung ist angepasst.
+
+**Befehle:** `/ibt combat an|aus`, `/ibt bereit an|aus`, `/ibt log an|aus`, `/ibt sound`, `/ibt test`, `/ibt reset`.

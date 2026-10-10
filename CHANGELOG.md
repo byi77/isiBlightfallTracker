@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-10 - Version 0.7.1
+
+### Documentation
+- Clarify that Soul Reaper expiry and Dark Transformation expiry are alternative triggers for the same "NOW" signal. The first signal stays latched; the voice cue plays once per Blightfall window.
+- Explain that a new Dark Transformation starts a new window, while casting Blightfall consumes the current one. Runtime behaviour is unchanged.
+
 ## 2026-10-07 - Version 0.7.0
 
 ### Added

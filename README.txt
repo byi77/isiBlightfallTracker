@@ -1,6 +1,8 @@
 isiBlightfallTracker
 ====================
 
+Current version: 0.7.1 (2026-10-10).
+
 Unholy Death Knight helper for Blightfall (German client: "Seuchensturz").
 Shows the expected Blightfall damage, tells you when to press it, and keeps
 a local log so the estimate can be checked against what really happened.
@@ -51,6 +53,11 @@ first of these runs out:
 The number is grey until Blightfall is available and white once you can
 press it. In a "NOW" state the frame pulses and a short voice cue
 ("Go! Go!") plays once.
+
+Soul Reaper expiry and Dark Transformation expiry are alternative triggers
+for this same signal. The first "NOW" reason stays latched, so a later expiry
+does not produce a second voice cue in the same Blightfall window. Casting
+Blightfall consumes the window; a new Dark Transformation starts a new one.
 
 Drag the window with the left mouse button. Size, background
 transparency, border, lock, sound, channel and language are set in the
@@ -197,6 +204,11 @@ Ansage "Go! Go!", wann du zünden sollst, und protokolliert alles lokal.
 Zündsignal: kurz vor Ende der Dunklen Verwandlung, kurz vor Ende des
 Seelenernter-Debuffs (mit Talent "Reaping"; bei bis zu 3 Gegnern oder in
 jedem Bosskampf, auch mit Adds), oder bevor die Seuchen auslaufen.
+
+Die Auslöser gehören zum selben Zündsignal: Der erste Grund bleibt stehen,
+und die Ansage ertönt einmal pro Seuchensturz-Fenster. Ein späteres DT-Ende
+erzeugt im selben Fenster keine zweite Ansage. Seuchensturz verbraucht das
+Fenster; eine neue Dunkle Verwandlung startet ein neues.
 
 Verlässlich: Bereitschaft, DT-Balken (15 s + 1 s je Todesmantel/Epidemie),
 Seelenernter-Zeit, Zündsignal, Gegnerzahl (sichtbare Namensplaketten),

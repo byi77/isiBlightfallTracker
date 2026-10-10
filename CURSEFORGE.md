@@ -10,6 +10,11 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 
 ---
 
+## What's new in 0.7.1
+
+- **Clearer timing documentation:** Soul Reaper expiry and Dark Transformation expiry are alternative triggers for one "NOW" signal. The first reason stays latched and the voice cue plays once per Blightfall window.
+- A new Dark Transformation starts a new window; casting Blightfall consumes the current one. Runtime behaviour is unchanged from 0.7.0.
+
 ## What's new in 0.7.0
 
 - **Blightfall nerf (hotfix 2026-10-07):** Blightfall now deals 100 % of the remaining plague damage (was 200 %) - the estimate is updated accordingly

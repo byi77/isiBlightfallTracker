@@ -54,9 +54,11 @@ The number is grey until Blightfall is available and white once you can
 press it. In a "NOW" state the frame pulses and a short voice cue
 ("Go! Go!") plays once.
 
-Soul Reaper expiry and Dark Transformation expiry are alternative triggers
-for this same signal. The first "NOW" reason stays latched, so a later expiry
-does not produce a second voice cue in the same Blightfall window. Casting
+Soul Reaper expiry only triggers this signal when Dark Transformation also
+has at most 3 seconds left (including extensions). Dark Transformation can
+trigger on its own in its final 3 seconds or after it ends. The first "NOW"
+reason stays latched, so a later expiry does not produce a second voice cue
+in the same Blightfall window. Casting
 Blightfall consumes the window; a new Dark Transformation starts a new one.
 
 Drag the window with the left mouse button. Size, background
@@ -203,7 +205,8 @@ Ansage "Go! Go!", wann du zünden sollst, und protokolliert alles lokal.
 
 Zündsignal: kurz vor Ende der Dunklen Verwandlung, kurz vor Ende des
 Seelenernter-Debuffs (mit Talent "Reaping"; bei bis zu 3 Gegnern oder in
-jedem Bosskampf, auch mit Adds), oder bevor die Seuchen auslaufen.
+jedem Bosskampf, auch mit Adds; nur wenn DT ebenfalls höchstens 3 Sekunden
+Restzeit hat, inklusive Verlängerungen), oder bevor die Seuchen auslaufen.
 
 Die Auslöser gehören zum selben Zündsignal: Der erste Grund bleibt stehen,
 und die Ansage ertönt einmal pro Seuchensturz-Fenster. Ein späteres DT-Ende

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-11 - Version 0.7.2
+
+### Fixed
+- Soul Reaper expiry only triggers the "NOW" signal and voice cue when Dark Transformation also has at most 3 seconds remaining, including Eternal Agony extensions. Casting Soul Reaper shortly after Dark Transformation no longer triggers an early cue.
+
 ## 2026-10-10 - Version 0.7.1
 
 ### Documentation

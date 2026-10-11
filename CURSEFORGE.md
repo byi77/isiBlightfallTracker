@@ -10,6 +10,10 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 
 ---
 
+## What's new in 0.7.2
+
+- **No early Soul Reaper cue:** Soul Reaper expiry now only triggers "NOW" and "Go! Go!" when Dark Transformation also has at most 3 seconds remaining, including extensions.
+
 ## What's new in 0.7.1
 
 - **Clearer timing documentation:** Soul Reaper expiry and Dark Transformation expiry are alternative triggers for one "NOW" signal. The first reason stays latched and the voice cue plays once per Blightfall window.
@@ -47,7 +51,7 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 
 ## How Blightfall works (in short)
 
-Blightfall consumes your plagues within 40 yards and deals **100 % of their remaining damage** at once (200 % until the hotfix of 2026-10-07). It does not store damage - you *charge* it by extending your plagues (Death Coil, Epidemic, Putrefy with Blightburst, Vampiric Strike with Infliction of Sorrow). Guides and simulations press it shortly before **Dark Transformation**, the **Soul Reaper** debuff (up to 3 enemies, or any boss fight) or a trinket effect runs out. That is exactly what the signal follows.
+Blightfall consumes your plagues within 40 yards and deals **100 % of their remaining damage** at once (200 % until the hotfix of 2026-10-07). It does not store damage - you *charge* it by extending your plagues (Death Coil, Epidemic, Putrefy with Blightburst, Vampiric Strike with Infliction of Sorrow). Guides and simulations press it shortly before **Dark Transformation**, the **Soul Reaper** debuff (up to 3 enemies, or any boss fight) or a trinket effect runs out. The addon only allows the Soul Reaper trigger when Dark Transformation also has at most 3 seconds left, including extensions.
 
 ---
 
@@ -133,7 +137,7 @@ Zeigt den **erwarteten Schaden von Seuchensturz**, gibt mit Signal und Ansage de
 
 **⚠ Test an Trainingspuppen:** Einzelziel funktioniert. **Multitarget an mehreren Puppen ist eingeschränkt**, weil das Spiel nicht alle Puppen als Gegner anzeigt (es wird nur eine Namensplakette gezählt). Gegnerzahl und Alle-Ziele-Wert sind dort zu niedrig. Für Multitarget bitte im **Dungeon** beurteilen, dort werden die Gegner korrekt gezählt.
 
-**Zündsignal:** kurz vor Ende der Dunklen Verwandlung, kurz vor Ende des Seelenernter-Debuffs (mit Talent "Reaping"; bei bis zu 3 Gegnern **oder in jedem Bosskampf**, auch mit Adds), oder bevor die Seuchen auslaufen.
+**Zündsignal:** kurz vor Ende der Dunklen Verwandlung, kurz vor Ende des Seelenernter-Debuffs (mit Talent "Reaping"; bei bis zu 3 Gegnern **oder in jedem Bosskampf**, auch mit Adds; nur wenn DT ebenfalls höchstens 3 Sekunden Restzeit hat, inklusive Verlängerungen), oder bevor die Seuchen auslaufen.
 
 **Verlässlich:** Bereitschaft, Balken der Dunklen Verwandlung (15 s + 1 s je Todesmantel/Epidemie, auch Nekrotischer Mantel/Friedhof), Restzeit von Virulenter Seuche und Schreckensseuche auf deinem Ziel, Seelenernter-Zeit, Zündsignal, Gegnerzahl im Dungeon (sichtbare Namensplaketten), Ausbrüche nach dem Kampf. **Ungefähr:** Nächste Verwandlung. **Geschätzt** (mit `~`): große Zahl, Pro Ziel, Ist (geschätzt), Vorhersage.
 

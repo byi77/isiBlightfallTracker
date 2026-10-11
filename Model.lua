@@ -560,12 +560,11 @@ function Model.Evaluate(now)
     result.signal = state.nowReason
   else
     local reason
-    if dtLeft and dtLeft <= SIGNAL_LEAD_SECONDS then
-      -- Covers the end of the DT window and every moment after it.
-      reason = "now-dt-ending"
-    elseif
+    if
       soulReaperLeft > 0
       and soulReaperLeft <= SIGNAL_LEAD_SECONDS
+      -- Soul Reaper must never announce an early Blightfall while DT runs.
+      and dtLeft and dtLeft <= SIGNAL_LEAD_SECONDS
       -- SimC: (active_enemies <= 3 | raid_event.pull.has_boss). Epidemic in
       -- the window stands for "more than 3" (nameplate counts can miss
       -- enemies); a boss encounter keeps the rule with any number of adds.
@@ -573,6 +572,9 @@ function Model.Evaluate(now)
       and state.hasReaping ~= false
     then
       reason = "now-soul-reaper"
+    elseif dtLeft and dtLeft <= SIGNAL_LEAD_SECONDS then
+      -- Covers the end of the DT window and every moment after it.
+      reason = "now-dt-ending"
     elseif dtReadyIn and dtReadyIn <= SIGNAL_LEAD_SECONDS then
       reason = "now-dt-ready"
     elseif math.max(remVP, remDP) <= SIGNAL_LEAD_SECONDS then

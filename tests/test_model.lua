@@ -29,7 +29,7 @@ M.OnPlayerCast(47541, 2)          -- Death Coil +1
 check(math.abs(M.Evaluate(2).remVP - 17) < 1e-9, "Death Coil extends by 1s")
 M.OnPlayerCast(343294, 5)         -- Soul Reaper window 8s -> ends 13
 check(M.Evaluate(8).signal == "charging", "no signal while Soul Reaper has 5s left")
-check(M.Evaluate(10.5).signal == "now-soul-reaper", "signal fires 2.5s before Soul Reaper ends")
+check(M.Evaluate(10.5).signal == "charging", "Soul Reaper ending stays silent with more than 3s of DT left")
 M.OnPlayerCast(1271967, 11)       -- Blightfall consumes
 local after = M.Evaluate(11)
 check(not after.ready and after.remVP == 0 and after.signal == "idle", "Blightfall consumes plagues and readiness")
@@ -83,8 +83,12 @@ check(M.Evaluate(525).signal == "now-dt-ending", "signal stays latched after DT 
 M.OnPlayerCast(1271967, 531)
 check(M.Evaluate(531).signal == "idle", "Blightfall clears the latch")
 Replay(2)
-check(M.Evaluate(506.1).signal == "now-soul-reaper", "2 enemies: Soul Reaper rule fires 2.9s before it ends")
-check(M.Evaluate(507).signal == "now-soul-reaper", "latched: no flicker after the Soul Reaper trigger")
+check(M.Evaluate(503).signal == "charging", "DT then Soul Reaper: no early signal after 2s")
+check(M.Evaluate(504).signal == "charging", "DT then Soul Reaper: no early signal after 3s")
+check(M.Evaluate(506.1).signal == "charging", "2 enemies: Soul Reaper expiry cannot bypass extended DT")
+check(M.Evaluate(507).signal == "charging", "early Soul Reaper expiry does not latch a signal")
+check(M.Evaluate(519.9).signal == "charging", "single target waits for the extended DT end window")
+check(M.Evaluate(520).signal == "now-dt-ending", "expired Soul Reaper: DT signals at exactly 3s left")
 -- Eternal Agony only extends a running DT.
 M.ResetCombatState()
 M.OnPlayerCast(1233448, 600)               -- DT ends 615
@@ -120,17 +124,49 @@ check(M.Evaluate(43.5).signal == "charging", "Epidemic in the DT window disables
 Window(false, false)
 check(M.Evaluate(43.5).signal == "charging", "without Reaping the Soul Reaper rule stays off")
 Window(false, true)
-check(M.Evaluate(43.5).signal == "now-soul-reaper", "single target + Reaping keeps the SimC Soul Reaper rule")
+check(M.Evaluate(43.5).signal == "charging", "single target + Reaping still waits for DT to end")
 -- SimC: (active_enemies <= 3 | boss in the pull). A boss encounter keeps the
 -- Soul Reaper rule with adds (Epidemic in the window, many nameplates).
 M.SetBossEncounter(true)
 Window(true, true)
-check(M.Evaluate(43.5).signal == "now-soul-reaper", "boss encounter: Soul Reaper rule despite Epidemic in the window")
+check(M.Evaluate(43.5).signal == "charging", "boss encounter cannot bypass the DT end guard")
 Window(true, false)
 check(M.Evaluate(43.5).signal == "charging", "boss encounter without Reaping: no Soul Reaper rule")
 M.SetBossEncounter(false)
 Window(true, true)
 check(M.Evaluate(43.5).signal == "charging", "after the encounter: Epidemic disables the rule again")
+-- Both expiry windows must overlap; all previous talent/enemy guards remain.
+local function Overlap(enemyCount, withEpidemic, reaping, boss)
+  M.SetBossEncounter(boss)
+  IsPlayerSpell = function(id) return id == 377514 and reaping end
+  M.RefreshTalents()
+  UnitExists = function(u) return tonumber(u:match("%d+")) <= enemyCount end
+  M.ResetCombatState()
+  M.OnPlayerCast(77575, 550)
+  M.OnPlayerCast(1233448, 550) -- DT ends 565
+  M.OnPlayerCast(448229, 558) -- alternate Soul Reaper spell ends 566
+  if withEpidemic then M.OnPlayerCast(207317, 559) end -- DT ends 566
+end
+Overlap(2, false, true, false)
+check(M.Evaluate(561.999).signal == "charging", "just outside DT's 3s window: no Soul Reaper signal")
+check(M.Evaluate(562).signal == "now-dt-ending", "DT can signal before Soul Reaper enters its own 3s window")
+Overlap(2, false, true, false)
+check(M.Evaluate(563).signal == "now-soul-reaper", "both windows overlap: Soul Reaper signal is allowed")
+check(M.Evaluate(567).signal == "now-soul-reaper", "overlapping Soul Reaper signal stays latched")
+M.OnPlayerCast(1271967, 568)
+check(M.Evaluate(568).signal == "idle", "Blightfall clears the overlapping Soul Reaper signal")
+Overlap(8, true, true, true)
+check(M.Evaluate(562.999).signal == "charging", "boss + Epidemic: extension delays Soul Reaper signal")
+check(M.Evaluate(563).signal == "now-soul-reaper", "boss + adds: both windows overlap at exactly 3s")
+Overlap(8, true, true, false)
+check(M.Evaluate(563).signal == "now-dt-ending", "outside bosses: adds/Epidemic keep the Soul Reaper guard")
+Overlap(2, false, false, false)
+check(M.Evaluate(563).signal == "now-dt-ending", "without Reaping: only the DT reason is allowed")
+Overlap(2, false, true, false)
+M.OnPlayerCast(47541, 560) -- DT ends 566
+M.OnPlayerCast(47541, 561) -- DT ends 567
+check(M.Evaluate(563).signal == "charging", "Death Coil extensions postpone an overlapping Soul Reaper signal")
+check(M.Evaluate(564).signal == "now-soul-reaper", "Soul Reaper may signal when extended DT reaches 3s")
 IsPlayerSpell = nil
 check(M.HasReapingTalent() == nil, "missing talent API reports unknown")
 -- 12.x: C_SpellBook.IsSpellKnown (player bank) wins over the deprecated global.

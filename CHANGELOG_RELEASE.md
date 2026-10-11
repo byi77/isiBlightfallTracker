@@ -1,5 +1,5 @@
-## isiBlightfallTracker 0.7.1
+## isiBlightfallTracker 0.7.2
 
-- Documentation update: Soul Reaper expiry and Dark Transformation expiry are alternative triggers for one "NOW" signal, with one voice cue per Blightfall window.
-- The first signal stays latched; a new Dark Transformation starts a new window and casting Blightfall consumes it.
-- Runtime behaviour is unchanged from 0.7.0.
+- Fix early "Go! Go!" cues after casting Dark Transformation followed by Soul Reaper.
+- Soul Reaper expiry now only triggers the "NOW" signal when Dark Transformation also has at most 3 seconds remaining, including Eternal Agony extensions.
+- The voice cue still plays once per Blightfall window.

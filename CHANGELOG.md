@@ -1,6 +1,8 @@
 # Changelog
 
-## 2026-10-12 - Version 0.7.3
+## 2026-10-12 - Version 0.7.7
+
+0.7.3 was never published; its changes ship with this version.
 
 ### Added
 - DK helper options migrated from isiLive: Soul Reaper and Putrefy button crosses,
@@ -8,6 +10,14 @@
 - One-time import of the four existing isiLive choices and the ghoul position when
   isiLive is loaded. Existing tracker values take priority; isiLive is not needed
   after import. All four options are off on a fresh installation.
+- The self-test log records whether the client reports the Blightburst talent (diagnostic only).
+
+### Changed
+- The voice cue is reserved for the end of Dark Transformation (and an eligible Soul Reaper
+  signal in the same final three seconds). "Plagues expiring" and "DT ready soon" still show
+  "NOW" in the window but are silent.
+- "Actual (estimated)" also subtracts Putrefy's erupts: with Blightburst, Putrefy erupts 35 % of the next 3 seconds of each ticking plague into the same damage meter rows as Blightfall (SimulationCraft `trigger_blightburst`, Blightburst 1254552). The value was too high before.
+- Dread Plague uses the duration from its own tooltip for the timer, the estimate and the calibration (both plagues are 24 s, 18 s with Ebon Fever, so the numbers do not change today).
 
 ### Fixed
 - The voice cue plays at most once per Dark Transformation phase, including plague
@@ -15,32 +25,25 @@
 - Early plague warnings cannot consume the DT-end cue. Soul Reaper shares the same
   cue only when both expiry windows overlap within three seconds; DT expiry wins
   over an earlier plague warning and still cues when both plagues have expired.
-- Cue evaluation is independent of display transitions, including combat entry
-  with an unchanged signal.
-
-### Tests
-- Preserve the prior audit scenarios and add migration, independent sound ownership,
-  all 29 migrated DK helper scenarios, and 27 DT/Soul Reaper cue checks.
-
-## Unreleased
-
-### Changed
-- "Actual (estimated)" also subtracts Putrefy's erupts: with Blightburst, Putrefy erupts 35 % of the next 3 seconds of each ticking plague into the same damage meter rows as Blightfall (SimulationCraft `trigger_blightburst`, Blightburst 1254552). The value was too high before.
-- Dread Plague uses the duration from its own tooltip for the timer, the estimate and the calibration (both plagues are 24 s, 18 s with Ebon Fever, so the numbers do not change today).
-
-### Fixed
+- A Dark Transformation phase that ended out of combat no longer plays the cue at the next pull.
+- Putrefy counts once per press: its single-target (1277016) and area (390220) parts no longer
+  extend or apply the plagues or add an erupt a second and third time. They are still logged.
 - Putrefy with Blightburst re-applies plagues that are not ticking. Guides follow Blightfall with Putrefy (Blightfall resets its cooldown); until now the plague rows stayed empty and the estimate stayed at 0 until the next Outbreak.
-- The voice cue plays at most once per Blightfall window, as documented. Plagues that ran out and were re-applied in the same window triggered a second cue.
 - With "Show only in combat" or "Show only when Blightfall is ready", the calibration, enemy count and log kept running only while the window was visible, so the learned correction factor could be based on part of the fight. They now run whether the window is shown or not.
-- After a /reload in combat the addon knows it is in combat: the combat-only window shows right away, and that partial fight is not used for calibration.
+- After a /reload in combat the addon knows it is in combat: the combat-only window shows right away, and that partial fight is not used for calibration. This also works when the specialization is only known after login.
 - On a chain pull, the post-combat damage-meter readout could land in the next fight and learn from the wrong numbers. A readout for an older fight is now dropped.
 - A damaged saved file (wrong type for the whole table or the log sessions) no longer stops the addon at login.
 - Commands with extra spaces (`/ibt log on ` from chat history or a macro) work instead of showing the help.
 - Large numbers just below a unit read "1.00M" / "1k" instead of "1000k" / "1000".
+- German ghoul reminder text is upper case like the English one.
 
 ### Release
 - The CurseForge token is sent as a header instead of in the upload URL.
 - A release is refused when `CHANGELOG_RELEASE.md` does not name the tagged version.
+
+### Tests
+- Regression tests for every fix above, the DK helper migration, all 29 migrated DK helper
+  scenarios and the DT/Soul Reaper cue checks.
 
 ## 2026-10-11 - Version 0.7.2
 

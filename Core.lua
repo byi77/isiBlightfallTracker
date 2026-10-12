@@ -152,9 +152,11 @@ local function SelfTest(reason)
 
   local tooltip = Model.SampleTooltips()
   local hasReaping = Model.RefreshTalents()
+  local hasBlightburst = Model.HasBlightburstTalent()
   Log.Add("selftest", {
     reason = reason,
     reaping = hasReaping == nil and "unknown" or hasReaping,
+    blightburst = hasBlightburst == nil and "unknown" or hasBlightburst,
     inCombat = InCombatLockdown(),
     restrictions = RestrictionStates(),
     context = InstanceContext(),
@@ -732,7 +734,8 @@ end
 
 -- Soul Reaper and DT expiry share one voice cue. Early plague warnings must
 -- not consume it. The latch belongs to the DT phase and only a new DT resets
--- it, including when plagues expire, are re-applied or DT is extended.
+-- it, including when plagues expire, are re-applied or DT is extended. A
+-- phase that ended out of combat is latched at the next combat start.
 local windowCued = false
 
 local function PlayGoSound(signal)
@@ -1013,6 +1016,14 @@ local function UpdateActivation(reason)
   end
   active = shouldBeActive
   Log.Add("activation", { active = active, reason = reason })
+  -- /reload in combat: PLAYER_REGEN_DISABLED has already fired. Checked on
+  -- every activation, since the spec may only be known after PLAYER_LOGIN.
+  if active and not inCombat and InCombatLockdown() then
+    inCombat = true
+    partialCombat = true
+    combatIndex = combatIndex + 1
+    Model.ResetCalibration()
+  end
   UpdateVisibility()
   if active then
     SelfTest("activation")
@@ -1139,14 +1150,6 @@ local function OnEvent(_, event, ...)
       pcall(C_Spell.RequestLoadSpellData, SPELL.DREAD_PLAGUE)
     end
     UpdateActivation("login")
-    -- /reload in combat: PLAYER_REGEN_DISABLED has already fired.
-    if active and InCombatLockdown() then
-      inCombat = true
-      partialCombat = true
-      combatIndex = combatIndex + 1
-      Model.ResetCalibration()
-      UpdateVisibility()
-    end
     return
   end
   if event == "PLAYER_TARGET_CHANGED" then
@@ -1177,6 +1180,11 @@ local function OnEvent(_, event, ...)
   elseif event == "PLAYER_REGEN_DISABLED" then
     inCombat = true
     partialCombat = false
+    -- A DT phase that ended out of combat does not cue at the next pull.
+    local dtEndsAt = Model.state.dtEndsAt
+    if dtEndsAt and dtEndsAt <= GetTime() then
+      windowCued = true
+    end
     UpdateVisibility()
     combatIndex = combatIndex + 1
     lastSample = 0

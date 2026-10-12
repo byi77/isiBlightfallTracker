@@ -121,7 +121,7 @@ local deDE = {
   OPT_DK_HORSE_TIP = "Schaltet die drei bisherigen Pferde-Beschwörungsklänge stumm.",
   OPT_DK_GHOUL = "Warnung bei fehlendem Ghoul",
   OPT_DK_GHOUL_TIP = "Zeigt eine verschiebbare Warnung, wenn dein Unheilig-Ghoul fehlt. Die Position wird beim Verschieben gespeichert.",
-  VIP_DK_GHOUL_REMINDER_TEXT = "Ghoul beschwören",
+  VIP_DK_GHOUL_REMINDER_TEXT = "GHOUL BESCHWÖREN",
 
   -- signal row
   SIGNAL_IDLE = "nicht bereit",

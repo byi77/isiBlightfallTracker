@@ -219,3 +219,54 @@ M.NoteEruptCast(433895, 1002)                     -- x1.75 = 12250
 check(math.abs(M.calibration.strikeEruptExpected - 19250) < 1e-6 and M.calibration.strikeCasts == 3, "Vampiric Strike erupts 175 % (3 strikes counted, 1 without plagues)")
 M.NoteBlightfallCast(500000); M.NoteBlightfallCast(300000)
 check(M.calibration.blightfallCasts == 2 and M.calibration.blightfallPredicted == 800000, "Blightfall predictions are summed per combat")
+
+-- Dread Plague with its own (different) duration: applied, estimated and
+-- integrated with that duration, not Virulent Plague's.
+C_Spell = { GetSpellDescription = function(id)
+  if id == 191587 then return "im Verlauf von 18 Sek. 18.000 Schattenschaden verursacht." end
+  return "im Verlauf von 24 Sek. 48.000 Schattenschaden verursacht. 1 Wirt."
+end }
+M.ResetCombatState()
+M.SampleTooltips()
+M.OnPlayerCast(77575, 100)
+local rd = M.Evaluate(100)
+check(math.abs(rd.remVP - 18) < 1e-9 and math.abs(rd.remDP - 24) < 1e-9, "Outbreak applies each plague with its own duration")
+check(math.abs(rd.estimateSingle - (48000 * 24 / 24 + 18000 * 18 / 18) * M.factors.vp) < 1e-6, "DP share uses the DP duration")
+check(rd.dpDuration == 24 and rd.plagueDuration == 18, "both durations reported for the bars")
+M.ResetCalibration()
+M.Accumulate(1, 100)
+check(math.abs(M.calibration.dpExpected - 2000) < 1e-6 and math.abs(M.calibration.vpExpected - 1000) < 1e-6, "calibration integrates each plague at its own rate")
+
+-- Putrefy with Blightburst (SimC trigger_blightburst): applies the plagues
+-- Blightfall consumed, extends ticking ones by 3 s, and its erupt (35 % of
+-- the next 3 s) shares the erupt rows with Blightfall.
+M.ResetCombatState()
+M.OnPlayerCast(77575, 200)        -- Outbreak: VP 18 s, DP 24 s
+M.OnPlayerCast(1233448, 200)      -- Dark Transformation
+M.OnPlayerCast(1271967, 201)      -- Blightfall consumes both
+local rb = M.Evaluate(201)
+check(rb.remVP == 0 and rb.remDP == 0, "Blightfall consumed the plagues")
+M.ResetCalibration()
+M.NoteEruptCast(1247378, 202)
+check(M.calibration.strikeEruptExpected == 0, "Putrefy without plagues erupts nothing")
+M.OnPlayerCast(1247378, 202)      -- Putrefy re-applies
+local rp = M.Evaluate(202)
+check(math.abs(rp.remVP - 18) < 1e-9 and math.abs(rp.remDP - 24) < 1e-9, "Putrefy applies both plagues, no extra 3 s on a fresh plague")
+M.NoteEruptCast(1247378, 203)
+local putrefyErupt = (18000 * 0.35 * 3 / 18 + 48000 * 0.35 * 3 / 24) * M.factors.vp
+check(math.abs(M.calibration.strikeEruptExpected - putrefyErupt) < 1e-6, "Putrefy erupt = 35 % of the next 3 s of each plague")
+M.OnPlayerCast(1247378, 203)
+check(math.abs(M.Evaluate(203).remVP - 20) < 1e-9, "Putrefy extends a ticking plague by 3 s")
+
+-- Putrefy's single-target and area parts belong to the same press: logged,
+-- but they neither extend nor apply plagues nor add an erupt.
+M.ResetCombatState()
+M.OnPlayerCast(77575, 300)
+M.OnPlayerCast(1277016, 301)
+M.OnPlayerCast(390220, 301)
+check(math.abs(M.Evaluate(301).remVP - 17) < 1e-9, "Putrefy sub-spells do not extend the plagues")
+M.ResetCalibration()
+M.NoteEruptCast(1277016, 301)
+M.NoteEruptCast(390220, 301)
+check(M.calibration.strikeEruptExpected == 0 and M.calibration.strikeCasts == 0, "Putrefy sub-spells add no erupt")
+check(ns.TRACKED_SPELLS[1277016] and ns.TRACKED_SPELLS[390220], "Putrefy sub-spells are still logged")

@@ -1,7 +1,7 @@
 isiBlightfallTracker
 ====================
 
-Current version: 0.7.2 (2026-10-11).
+Current version: 0.7.7 (2026-10-12).
 
 Unholy Death Knight helper for Blightfall (German client: "Seuchensturz").
 Shows the expected Blightfall damage, tells you when to press it, and keeps
@@ -51,8 +51,9 @@ first of these runs out:
   Predicted                    ~390k  last fight: average prediction at press
 
 The number is grey until Blightfall is available and white once you can
-press it. In a "NOW" state the frame pulses and a short voice cue
-("Go! Go!") plays once.
+press it. In a "NOW" state the frame pulses. The short voice cue
+("Go! Go!") only plays for the end of Dark Transformation (see below);
+"plagues expiring" and "DT ready soon" show "NOW" without sound.
 
 Soul Reaper expiry only triggers this signal when Dark Transformation also
 has at most 3 seconds left (including extensions). Dark Transformation can
@@ -62,7 +63,8 @@ plague warning. The voice cue is reserved for the final 3 seconds of DT
 (including extensions), even if both plagues already expired. It plays at
 most once per DT phase: re-applying plagues or extending DT after the cue
 does not repeat it. Casting Blightfall consumes the window; only a new Dark
-Transformation resets the voice cue.
+Transformation resets the voice cue. A DT phase that ended out of combat
+does not play the cue at the next pull.
 When Soul Reaper and DT both have at most 3 seconds left, the eligible Soul
 Reaper signal uses that same cue; DT expiry cannot announce a second one.
 
@@ -231,6 +233,8 @@ Verlängerungen, auch wenn beide Seuchen vorher ausgelaufen sind. Das DT-Ende
 hat Vorrang vor einer früheren Seuchenwarnung. Pro DT-Phase ertönt die Ansage
 höchstens einmal, auch nach neu gesetzten Seuchen oder einer nachträglichen
 DT-Verlängerung. Nur eine neue Dunkle Verwandlung setzt die Ansage zurück.
+Seuchenwarnung und "DT bald bereit" zeigen "JETZT" ohne Ansage. Endet eine
+DT-Phase außerhalb des Kampfes, kommt beim nächsten Pull keine Ansage.
 Seelenernter zählt nur, wenn Seelenernter und DT beide höchstens 3 Sekunden
 Restzeit haben; seine Ansage teilt dieselbe Sperre mit dem DT-Ende.
 Putrefy (mit Blightburst) setzt fehlende Seuchen neu

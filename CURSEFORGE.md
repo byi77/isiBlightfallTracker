@@ -2,7 +2,7 @@
 
 **Know what your Blightfall will hit for - and when to press it.**
 
-A small, self-contained helper for **Unholy Death Knights** (Retail 12.1, Midnight). It shows the expected damage of **Blightfall** (German: *Seuchensturz*), tells you the right moment to press it with a visual signal and a voice cue, shows the real time left on your plagues, and learns from your own fights.
+A small, self-contained helper for **Unholy Death Knights** (Retail 12.1, Midnight). It shows the expected damage of **Blightfall** (German: *Seuchensturz*), tells you the right moment to press it with a visual signal and, at the end of Dark Transformation, a voice cue, shows the real time left on your plagues, and learns from your own fights.
 
 Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: it switches itself on for Unholy and stays hidden otherwise.
 
@@ -10,14 +10,19 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 
 ---
 
-## What's new in 0.7.3
+## What's new in 0.7.7
 
 - **DK helpers:** Soul Reaper and Putrefy button crosses, horse-sound muting and a
   movable missing-ghoul reminder have moved here from isiLive. Existing choices
   and the reminder position are imported once when isiLive is loaded.
-- **One GoGo per DT phase:** Soul Reaper counts only when its final three seconds
-  overlap with DT's final three seconds. Early plague warnings cannot consume the
-  DT-end cue; plague reapplication and later extensions cannot repeat it.
+- **One "Go! Go!" per DT phase:** the voice cue is reserved for Dark Transformation's
+  final three seconds; Soul Reaper shares it only when its final three seconds overlap.
+  "Plagues expiring" and "DT ready soon" show "NOW" silently. A DT phase that ended
+  out of combat no longer cues at the next pull.
+- **Better "Actual" value:** Putrefy's erupts (Blightburst) are subtracted, once per press,
+  and Putrefy re-applies the plagues Blightfall consumed.
+- **Robustness:** calibration keeps running while the window is hidden; /reload in combat,
+  chain pulls and damaged saved files are handled.
 
 ## Previous changes in 0.7.2
 
@@ -48,7 +53,7 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 ## Features
 
 - **Expected Blightfall damage** as a big number, for one target and for all enemies in combat
-- **"NOW" signal + voice cue** when it is time to press (once per window)
+- **"NOW" signal** when it is time to press, **voice cue** once per Dark Transformation phase
 - **Real time left of Virulent Plague and Dread Plague** on your target, with bars
 - **Dark Transformation bar** that follows Eternal Agony extensions (+1 s per Death Coil / Epidemic, also Necrotic Coil / Graveyard)
 - **Soul Reaper window** (with the +20 % bonus shown) and the next Dark Transformation

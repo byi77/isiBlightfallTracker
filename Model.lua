@@ -33,9 +33,10 @@ local EXTENSION_BY_SPELL = {
   -- graveyard_t -> unholy_rp_impact_effects).
   [1242174] = 1, -- Necrotic Coil
   [383269] = 1, -- Graveyard
+  -- Putrefy: only the button cast counts. Its single-target (1277016) and
+  -- area (390220) parts are the same press and would count it up to three
+  -- times; they are tracked for the log only (PUTREFY_LOG_ONLY).
   [1247378] = 3, -- Putrefy (Blightburst)
-  [1277016] = 3, -- Putrefy single target (Blightburst)
-  [390220] = 3, -- Putrefy area (Blightburst)
   [433895] = 3, -- Vampiric Strike (Infliction of Sorrow)
   [434422] = 3, -- Vampiric Strike (variant)
 }
@@ -51,13 +52,14 @@ local VIRULENT_PLAGUE_APPLIERS = {
   [433895] = true, -- Vampiric Strike
   [434422] = true, -- Vampiric Strike (variant)
   [1247378] = true, -- Putrefy (Blightburst)
-  [1277016] = true, -- Putrefy single target (Blightburst)
-  [390220] = true, -- Putrefy area (Blightburst)
 }
 local DREAD_PLAGUE_APPLIERS = {
   [1247378] = true, -- Putrefy (Blightburst)
-  [1277016] = true, -- Putrefy single target (Blightburst)
-  [390220] = true, -- Putrefy area (Blightburst)
+}
+-- Putrefy's sub-spells: logged to see what the client reports, never modelled.
+local PUTREFY_LOG_ONLY = {
+  [1277016] = true, -- Putrefy single target
+  [390220] = true, -- Putrefy area
 }
 
 -- Eternal Agony (390268, part of Dark Transformation): every Death Coil and
@@ -86,6 +88,7 @@ local DARK_TRANSFORMATION_DURATION = 15
 -- and only with the Reaping talent (377514) and Soul Reaper talented.
 local SOUL_REAPER_RULE_MAX_ENEMIES = 3
 local REAPING_TALENT = 377514
+local BLIGHTBURST_TALENT = 1254552
 -- Soul Reaper debuff 1241521 effect #3: +20 % on Virulent/Dread Plague (Erupt).
 local SOUL_REAPER_ERUPT_BONUS = 0.20
 -- Share of the remaining plague damage that Blightfall deals. Hotfix
@@ -112,16 +115,27 @@ local function SpellKnownFunction()
   return nil
 end
 
-function Model.HasReapingTalent()
+local function IsSpellKnown(spellID)
   local check = SpellKnownFunction()
   if not check then
     return nil
   end
-  local ok, known = pcall(check, REAPING_TALENT)
+  local ok, known = pcall(check, spellID)
   if not ok or ns.IsSecret(known) then
     return nil
   end
   return known == true
+end
+
+function Model.HasReapingTalent()
+  return IsSpellKnown(REAPING_TALENT)
+end
+
+-- Diagnostic only (self-test log): whether the client reports Blightburst as
+-- known. Putrefy is modelled with Blightburst either way until logs show this
+-- check is reliable.
+function Model.HasBlightburstTalent()
+  return IsSpellKnown(BLIGHTBURST_TALENT)
 end
 local SIGNAL_LEAD_SECONDS = 3 -- about two global cooldowns
 
@@ -136,6 +150,9 @@ for id in pairs(VIRULENT_PLAGUE_APPLIERS) do
   ns.TRACKED_SPELLS[id] = true
 end
 for id in pairs(DREAD_PLAGUE_APPLIERS) do
+  ns.TRACKED_SPELLS[id] = true
+end
+for id in pairs(PUTREFY_LOG_ONLY) do
   ns.TRACKED_SPELLS[id] = true
 end
 for _, id in pairs(SPELL) do
@@ -381,7 +398,7 @@ end
 --   (Blightburst 1254552 effects #1 / #2, SimC trigger_blightburst).
 local STRIKE_ERUPT_MULT = { [55090] = 1.0, [433895] = 1.75, [434422] = 1.75 }
 local TICKS_PER_DURATION = 8
-local PUTREFY_ERUPT = { [1247378] = true, [1277016] = true, [390220] = true }
+local PUTREFY_ERUPT = { [1247378] = true }
 local BLIGHTBURST_SECONDS = 3
 local BLIGHTBURST_SHARE = 0.35
 

@@ -730,15 +730,9 @@ local function DiagnosticsText()
   )
 end
 
--- Voice cue when the signal turns to "now". Plays once per switch into a
--- now-state; sound and channel are chosen in the options (see Sound.lua).
-local function IsNowSignal(signal)
-  return type(signal) == "string" and signal:find("^now%-") ~= nil
-end
-
--- The cue plays at most once per Blightfall window, even when the signal
--- leaves "now" in between (plagues ran out and were re-applied). A Dark
--- Transformation starts a new window, Blightfall ends it.
+-- Soul Reaper and DT expiry share one voice cue. Early plague warnings must
+-- not consume it. The latch belongs to the DT phase and only a new DT resets
+-- it, including when plagues expire, are re-applied or DT is extended.
 local windowCued = false
 
 local function PlayGoSound(signal)
@@ -793,10 +787,12 @@ local function OnUpdate(_, elapsed)
   end
   if result.signal ~= lastSignal then
     Log.Add("signal", { from = lastSignal, to = result.signal, combat = combatIndex })
-    if inCombat and IsNowSignal(result.signal) and not IsNowSignal(lastSignal) then
-      PlayGoSound(result.signal)
-    end
     lastSignal = result.signal
+  end
+  -- Check independently of display transitions: an early warning, missing
+  -- plagues or an unchanged signal cannot suppress the DT-end cue.
+  if inCombat and result.cueSignal then
+    PlayGoSound(result.cueSignal)
   end
   if now - lastLiveRead >= LIVE_READ_INTERVAL then
     lastLiveRead = now
@@ -1054,6 +1050,7 @@ local function SafeRegisterPlayer(eventName)
 end
 SafeRegisterPlayer("PLAYER_SPECIALIZATION_CHANGED")
 SafeRegisterPlayer("UNIT_SPELLCAST_SUCCEEDED")
+SafeRegisterPlayer("UNIT_PET")
 
 local function OnPlayerCast(spellID)
   if ns.IsSecret(spellID) then
@@ -1081,7 +1078,7 @@ local function OnPlayerCast(spellID)
   end
   local wasReady = Model.state.ready
   local effect = Model.OnPlayerCast(spellID, now)
-  if spellID == SPELL.DARK_TRANSFORMATION or spellID == SPELL.BLIGHTFALL then
+  if spellID == SPELL.DARK_TRANSFORMATION then
     windowCued = false
   end
   if Model.state.ready ~= wasReady then
@@ -1113,9 +1110,17 @@ local function OnPlayerCast(spellID)
   end
 end
 
+local dkAssistEvent = Guard("DkAssist", function(event, ...)
+  ns.DkAssist.HandleEvent(event, ...)
+end)
+
 local function OnEvent(_, event, ...)
+  if event ~= "PLAYER_LOGIN" then
+    dkAssistEvent(event, ...)
+  end
   if event == "PLAYER_LOGIN" then
     Log.InitDB()
+    ns.DkAssist.Initialize()
     if Log.IsEnabled() then
       Log.StartSession()
     end

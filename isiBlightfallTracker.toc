@@ -2,7 +2,7 @@
 ## Title: isi|cff1e90ffBlightfallTracker|r
 ## Notes: Unholy DK: estimated Blightfall damage, timing signal and a self-test log.
 ## Author: mematiWoW
-## Version: 0.7.2
+## Version: 0.7.3
 ## SavedVariables: isiBlightfallTrackerDB
 
 Locale.lua
@@ -10,6 +10,9 @@ Log.lua
 Settings.lua
 Model.lua
 Sound.lua
+DkSupport.lua
+ActionButtonOverlay.lua
+DkAssist.lua
 Core.lua
 PlagueAuras.lua
 Options.lua

@@ -6,6 +6,17 @@ local _, ns = ...
 -- (no abbreviations) and must fit the window (see tests/test_layout.lua).
 
 local enUS = {
+  OPT_SECTION_DK = "Death Knight helpers",
+  OPT_DK_SOUL_REAPER = "Soul Reaper button cross",
+  OPT_DK_SOUL_REAPER_TIP = "Shows a red cross for 7 seconds after Dark Transformation and during the last 7 seconds before its next cooldown ends.",
+  OPT_DK_PUTREFY = "Putrefy button cross",
+  OPT_DK_PUTREFY_TIP = "Shows a red cross in the last 15 seconds before Dark Transformation when at most one Putrefy charge remains. Unreadable charges keep the warning.",
+  OPT_DK_HORSE = "Mute Riders of the Apocalypse horse sounds",
+  OPT_DK_HORSE_TIP = "Mutes the three established horse summon sounds.",
+  OPT_DK_GHOUL = "Show missing-ghoul reminder",
+  OPT_DK_GHOUL_TIP = "Shows a movable warning when your Unholy ghoul is missing. Drag it to save its position.",
+  VIP_DK_GHOUL_REMINDER_TEXT = "SUMMON GHOUL",
+
   -- signal row
   SIGNAL_IDLE = "not ready",
   SIGNAL_NO_PLAGUES = "no plagues",
@@ -101,6 +112,17 @@ local enUS = {
 }
 
 local deDE = {
+  OPT_SECTION_DK = "Todesritter-Hilfen",
+  OPT_DK_SOUL_REAPER = "Kreuz auf Seelenernter",
+  OPT_DK_SOUL_REAPER_TIP = "Zeigt ein rotes Kreuz für 7 Sekunden nach Dunkler Verwandlung und in den letzten 7 Sekunden vor ihrer nächsten Bereitschaft.",
+  OPT_DK_PUTREFY = "Kreuz auf Putrefy",
+  OPT_DK_PUTREFY_TIP = "Zeigt ein rotes Kreuz in den letzten 15 Sekunden vor Dunkler Verwandlung, wenn höchstens eine Putrefy-Ladung übrig ist. Bei unlesbaren Ladungen bleibt die Warnung.",
+  OPT_DK_HORSE = "Pferdeklänge der Reiter der Apokalypse stummschalten",
+  OPT_DK_HORSE_TIP = "Schaltet die drei bisherigen Pferde-Beschwörungsklänge stumm.",
+  OPT_DK_GHOUL = "Warnung bei fehlendem Ghoul",
+  OPT_DK_GHOUL_TIP = "Zeigt eine verschiebbare Warnung, wenn dein Unheilig-Ghoul fehlt. Die Position wird beim Verschieben gespeichert.",
+  VIP_DK_GHOUL_REMINDER_TEXT = "Ghoul beschwören",
+
   -- signal row
   SIGNAL_IDLE = "nicht bereit",
   SIGNAL_NO_PLAGUES = "keine Seuchen",

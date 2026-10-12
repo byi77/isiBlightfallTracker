@@ -10,7 +10,16 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 
 ---
 
-## What's new in 0.7.2
+## What's new in 0.7.3
+
+- **DK helpers:** Soul Reaper and Putrefy button crosses, horse-sound muting and a
+  movable missing-ghoul reminder have moved here from isiLive. Existing choices
+  and the reminder position are imported once when isiLive is loaded.
+- **One GoGo per DT phase:** Soul Reaper counts only when its final three seconds
+  overlap with DT's final three seconds. Early plague warnings cannot consume the
+  DT-end cue; plague reapplication and later extensions cannot repeat it.
+
+## Previous changes in 0.7.2
 
 - **No early Soul Reaper cue:** Soul Reaper expiry now only triggers "NOW" and "Go! Go!" when Dark Transformation also has at most 3 seconds remaining, including extensions.
 

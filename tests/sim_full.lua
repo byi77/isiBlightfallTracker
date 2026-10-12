@@ -60,7 +60,7 @@ print = function() end
 dofile((arg[0]:match("^(.*)[/\\]") or ".") .. "/frame_stub.lua")
 
 local ns = {}
-for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
+for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "DkSupport.lua", "ActionButtonOverlay.lua", "DkAssist.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
   assert(loadfile(dir .. "/" .. file))("isiBlightfallTracker", ns)
 end
 local display, events

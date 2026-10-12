@@ -93,6 +93,18 @@ function Options.Register()
     return container:GetData()
   end, L.OPT_LANGUAGE_TIP)
 
+  AddHeader(layout, L.OPT_SECTION_DK)
+  for _, item in ipairs({
+    { "vipDkSoulReaperWarningEnabled", "OPT_DK_SOUL_REAPER", "OPT_DK_SOUL_REAPER_TIP" },
+    { "vipDkPutrefyWarningEnabled", "OPT_DK_PUTREFY", "OPT_DK_PUTREFY_TIP" },
+    { "vipDkApocalypseHorseSoundMuted", "OPT_DK_HORSE", "OPT_DK_HORSE_TIP" },
+    { "vipDkGhoulReminderEnabled", "OPT_DK_GHOUL", "OPT_DK_GHOUL_TIP" },
+  }) do
+    api.CreateCheckbox(category,
+      Proxy(api, VarType.Boolean, item[1], L[item[2]], ns.DkAssist.RefreshSettings),
+      L[item[3]])
+  end
+
   -- Voice cue ------------------------------------------------------------------
   AddHeader(layout, L.OPT_SECTION_SOUND)
   api.CreateCheckbox(category, Proxy(api, VarType.Boolean, "soundEnabled", L.OPT_SOUND_ENABLED), L.OPT_SOUND_ENABLED_TIP)

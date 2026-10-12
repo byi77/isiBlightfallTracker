@@ -84,7 +84,7 @@ local function Boot(locale, withSharedMedia, savedDB)
   print = function() end
   dofile(stub)
   local ns = {}
-  for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
+  for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "DkSupport.lua", "ActionButtonOverlay.lua", "DkAssist.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
     assert(loadfile(dir .. "/" .. file))("isiBlightfallTracker", ns)
   end
   local display, events = STUB_WINDOW(), nil
@@ -103,7 +103,9 @@ local function V(key) return "isiBlightfallTracker_" .. key end
 -- Registration and defaults ----------------------------------------------------
 local ns, display = Boot("deDE", true)
 check(ADDON_CATEGORY ~= nil and ADDON_CATEGORY.name == "isiBlightfallTracker", "options page registered as addon category")
-local expected = { language = "dropdown", soundEnabled = "checkbox", soundChoice = "dropdown", soundChannel = "dropdown", combatOnly = "checkbox",
+local expected = { vipDkSoulReaperWarningEnabled = "checkbox", vipDkPutrefyWarningEnabled = "checkbox",
+vipDkApocalypseHorseSoundMuted = "checkbox", vipDkGhoulReminderEnabled = "checkbox",
+language = "dropdown", soundEnabled = "checkbox", soundChoice = "dropdown", soundChannel = "dropdown", combatOnly = "checkbox",
   readyOnly = "checkbox", locked = "checkbox", showBorder = "checkbox", scale = "slider", bgTransparency = "slider", logEnabled = "checkbox" }
 for key, kind in pairs(expected) do
   local s = REGISTERED[V(key)]

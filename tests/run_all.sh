@@ -20,14 +20,14 @@ run() {
   fi
 }
 
-for file in Locale.lua Log.lua Settings.lua Model.lua Sound.lua Core.lua PlagueAuras.lua Options.lua; do
+for file in Locale.lua Log.lua Settings.lua Model.lua Sound.lua DkSupport.lua ActionButtonOverlay.lua DkAssist.lua Core.lua PlagueAuras.lua Options.lua; do
   run "syntax ${file}" "${LUAC}" -p "${ROOT}/${file}"
 done
 run "tooltip parser" lua "${T}/test_parse.lua" "${ROOT}"
 run "model" lua "${T}/test_model.lua" "${ROOT}"
 run "live erupt reader" lua "${T}/test_live.lua" "${ROOT}" "${T}/frame_stub.lua"
 run "locale tables" lua "${T}/test_locale.lua" "${ROOT}"
-run "locale keys used" lua "${T}/test_locale_keys.lua" "${ROOT}/Locale.lua" "${ROOT}/Core.lua" "${ROOT}/PlagueAuras.lua" "${ROOT}/Options.lua" "${ROOT}/Sound.lua"
+run "locale keys used" lua "${T}/test_locale_keys.lua" "${ROOT}/Locale.lua" "${ROOT}/Core.lua" "${ROOT}/PlagueAuras.lua" "${ROOT}/Options.lua" "${ROOT}/Sound.lua" "${ROOT}/DkAssist.lua"
 run "layout widths" lua "${T}/test_layout.lua" "${ROOT}"
 run "full simulation (readable)" lua "${T}/sim_full.lua" "${ROOT}" plain
 run "full simulation (M+ secrets)" lua "${T}/sim_full.lua" "${ROOT}" secret
@@ -35,6 +35,11 @@ run "settings (log, combat-only)" lua "${T}/test_settings.lua" "${ROOT}" "${T}/f
 run "options page, sound, appearance" lua "${T}/test_options.lua" "${ROOT}" "${T}/frame_stub.lua"
 run "plague time from the aura container" lua "${T}/test_plague_auras.lua" "${ROOT}" "${T}/frame_stub.lua"
 run "error firewall" lua "${T}/sim_faults.lua" "${ROOT}" plain
+
+run "DK migration" lua "${T}/test_dk_migration.lua" "${ROOT}" "${T}/frame_stub.lua"
+run "retained DK helpers" lua "${T}/test_dk_assist.lua" "${ROOT}"
+run "DT cue once per phase" lua "${T}/test_dt_cue.lua" "${ROOT}" plain
+run "SR and DT overlap" lua "${T}/test_sr_dt_overlap.lua" "${ROOT}" plain
 
 if [ "${FAILED}" -ne 0 ]; then
   echo "Some tests failed."

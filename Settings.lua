@@ -8,6 +8,10 @@ local Settings = {}
 ns.Settings = Settings
 
 local DEFAULTS = {
+  vipDkSoulReaperWarningEnabled = false,
+  vipDkPutrefyWarningEnabled = false,
+  vipDkApocalypseHorseSoundMuted = false,
+  vipDkGhoulReminderEnabled = false,
   language = "auto", -- "auto" follows the game client
   soundEnabled = true,
   soundChoice = "gogo",
@@ -35,6 +39,11 @@ for _, choice in ipairs(ns.LANGUAGES) do
 end
 
 local VALIDATORS = {
+  vipDkSoulReaperWarningEnabled = function(v) return type(v) == "boolean" end,
+  vipDkPutrefyWarningEnabled = function(v) return type(v) == "boolean" end,
+  vipDkApocalypseHorseSoundMuted = function(v) return type(v) == "boolean" end,
+  vipDkGhoulReminderEnabled = function(v) return type(v) == "boolean" end,
+
   language = function(v)
     return VALID_LANGUAGE[v] == true
   end,

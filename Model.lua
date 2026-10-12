@@ -588,10 +588,24 @@ function Model.Evaluate(now)
   result.plagueDuration = state.duration
   result.dpDuration = dpDuration
 
+  -- DT expiry remains a cue even when the player let both plagues expire.
+  -- Early plague warnings cannot consume it. Core keeps the once-per-DT
+  -- latch until the next DT cast.
+  if state.ready and dtLeft and dtLeft <= SIGNAL_LEAD_SECONDS then
+    result.cueSignal = "now-dt-ending"
+    if state.nowReason == "now-plagues-expiring" or state.nowReason == "now-dt-ready"
+      or (remVP <= 0 and remDP <= 0) then
+      state.nowReason = "now-dt-ending"
+    end
+  end
+
   -- Once a "now" rule fires the signal latches until Blightfall is cast, so
   -- the cue cannot flicker back to "charging" (and is announced once).
   if not state.ready then
     result.signal = "idle"
+  elseif result.cueSignal and state.nowReason == "now-dt-ending" then
+    -- DT expiry wins over an earlier plague warning or missing plagues.
+    result.signal = state.nowReason
   elseif remVP <= 0 and remDP <= 0 then
     result.signal = "no-plagues"
   elseif state.nowReason then
@@ -624,6 +638,11 @@ function Model.Evaluate(now)
     else
       result.signal = "charging"
     end
+  end
+  -- A valid Soul Reaper signal shares the same cue latch as DT expiry.
+  -- Keep the voice reason aligned with the display reason.
+  if result.cueSignal and result.signal == "now-soul-reaper" and soulReaperLeft > 0 then
+    result.cueSignal = result.signal
   end
   return result
 end

@@ -26,7 +26,7 @@ local function Boot(savedDB, lockdown)
   print = function() end
   dofile(stub)
   local ns = {}
-  for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
+  for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "DkSupport.lua", "ActionButtonOverlay.lua", "DkAssist.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
     assert(loadfile(dir .. "/" .. file))("isiBlightfallTracker", ns)
   end
   local display, events = STUB_WINDOW(), nil
@@ -184,7 +184,9 @@ Fire8("UNIT_SPELLCAST_SUCCEEDED", "player", "c2", 1233448) -- Dark Transformatio
 Run(14)
 check(plays == 1, "cue plays once when the signal turns to NOW")
 Run(6)
-check(ns8.Model.Evaluate(clock).signal == "no-plagues", "plagues ran out")
+local expired = ns8.Model.Evaluate(clock)
+check(expired.remVP == 0 and expired.remDP == 0, "plagues ran out")
+check(expired.signal == "now-dt-ending", "DT-end warning keeps priority after the plagues ran out")
 Fire8("UNIT_SPELLCAST_SUCCEEDED", "player", "c3", 77575) -- Outbreak again
 Run(1)
 check(plays == 1, "no second cue in the same window after re-applying the plagues")

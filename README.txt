@@ -1,7 +1,7 @@
 isiBlightfallTracker
 ====================
 
-Current version: 0.7.2 (2026-10-11).
+Current version: 0.7.3 (2026-10-12).
 
 Unholy Death Knight helper for Blightfall (German client: "Seuchensturz").
 Shows the expected Blightfall damage, tells you when to press it, and keeps
@@ -57,10 +57,14 @@ press it. In a "NOW" state the frame pulses and a short voice cue
 Soul Reaper expiry only triggers this signal when Dark Transformation also
 has at most 3 seconds left (including extensions). Dark Transformation can
 trigger on its own in its final 3 seconds or after it ends. The first "NOW"
-reason stays latched, so a later expiry does not produce a second voice cue
-in the same Blightfall window - also not when the plagues ran out and were
-re-applied in between. Casting Blightfall consumes the window; a new Dark
-Transformation starts a new one.
+reason stays latched, except that the DT-end warning overrides an earlier
+plague warning. The voice cue is reserved for the final 3 seconds of DT
+(including extensions), even if both plagues already expired. It plays at
+most once per DT phase: re-applying plagues or extending DT after the cue
+does not repeat it. Casting Blightfall consumes the window; only a new Dark
+Transformation resets the voice cue.
+When Soul Reaper and DT both have at most 3 seconds left, the eligible Soul
+Reaper signal uses that same cue; DT expiry cannot announce a second one.
 
 Putrefy with Blightburst re-applies plagues that are not ticking (both
 plagues on your target) and extends the ones that are by 3 s. Guides
@@ -143,6 +147,13 @@ actually carry Virulent Plague is hidden in combat.
 ---------------------------------------------------------------
 Options page: Esc > Options > AddOns > isiBlightfallTracker (or /ibt options)
   General         language: automatic (game language), English, Deutsch
+  DK helpers      Soul Reaper cross (7 s after DT and 7 s before next DT),
+                  Putrefy cross (15 s before DT; bank at most one charge),
+                  mute Riders of the Apocalypse horse sounds,
+                  movable warning when your Unholy ghoul is missing.
+                  Existing isiLive choices and ghoul position are imported
+                  once when isiLive is loaded; all four helpers are disabled
+                  in isiLive. On a fresh install these options default to off.
   Voice cue       on/off, sound, sound channel, "Play sound" test button
     Sound:        the voice "Go! Go!" (default), built-in game sounds
                   (raid warning, ready check, alarm clock, boss whisper),
@@ -215,10 +226,14 @@ Seelenernter-Debuffs (mit Talent "Reaping"; bei bis zu 3 Gegnern oder in
 jedem Bosskampf, auch mit Adds; nur wenn DT ebenfalls höchstens 3 Sekunden
 Restzeit hat, inklusive Verlängerungen), oder bevor die Seuchen auslaufen.
 
-Die Auslöser gehören zum selben Zündsignal: Der erste Grund bleibt stehen,
-und die Ansage ertönt einmal pro Seuchensturz-Fenster. Ein späteres DT-Ende
-erzeugt im selben Fenster keine zweite Ansage, auch nicht nach neu
-gesetzten Seuchen. Putrefy (mit Blightburst) setzt fehlende Seuchen neu
+Die Ansage ist für die letzten 3 Sekunden von DT reserviert, inklusive
+Verlängerungen, auch wenn beide Seuchen vorher ausgelaufen sind. Das DT-Ende
+hat Vorrang vor einer früheren Seuchenwarnung. Pro DT-Phase ertönt die Ansage
+höchstens einmal, auch nach neu gesetzten Seuchen oder einer nachträglichen
+DT-Verlängerung. Nur eine neue Dunkle Verwandlung setzt die Ansage zurück.
+Seelenernter zählt nur, wenn Seelenernter und DT beide höchstens 3 Sekunden
+Restzeit haben; seine Ansage teilt dieselbe Sperre mit dem DT-Ende.
+Putrefy (mit Blightburst) setzt fehlende Seuchen neu
 und verlängert laufende um 3 s. Seuchensturz verbraucht das
 Fenster; eine neue Dunkle Verwandlung startet ein neues.
 

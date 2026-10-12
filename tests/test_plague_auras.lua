@@ -91,7 +91,7 @@ local function Boot(opts)
     return c
   end
   local ns = {}
-  for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
+  for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "DkSupport.lua", "ActionButtonOverlay.lua", "DkAssist.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
     assert(loadfile(dir .. "/" .. file))("isiBlightfallTracker", ns)
   end
   local display, events

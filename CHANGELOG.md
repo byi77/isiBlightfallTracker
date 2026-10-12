@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-12 - Version 0.7.3
+
+### Added
+- DK helper options migrated from isiLive: Soul Reaper and Putrefy button crosses,
+  Riders of the Apocalypse horse-sound muting, and the movable missing-ghoul reminder.
+- One-time import of the four existing isiLive choices and the ghoul position when
+  isiLive is loaded. Existing tracker values take priority; isiLive is not needed
+  after import. All four options are off on a fresh installation.
+
+### Fixed
+- The voice cue plays at most once per Dark Transformation phase, including plague
+  reapplication and extensions after the cue. Only a new DT cast resets the latch.
+- Early plague warnings cannot consume the DT-end cue. Soul Reaper shares the same
+  cue only when both expiry windows overlap within three seconds; DT expiry wins
+  over an earlier plague warning and still cues when both plagues have expired.
+- Cue evaluation is independent of display transitions, including combat entry
+  with an unchanged signal.
+
+### Tests
+- Preserve the prior audit scenarios and add migration, independent sound ownership,
+  all 29 migrated DK helper scenarios, and 27 DT/Soul Reaper cue checks.
+
 ## Unreleased
 
 ### Changed

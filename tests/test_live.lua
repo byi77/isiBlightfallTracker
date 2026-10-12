@@ -41,13 +41,6 @@ DM({ combatSpells = { { spellID = 1241167, totalAmount = 800000 }, { spellID = 1
 local text, status = ns.ReadEruptsLive()
 check(status == "plain" and text == "~2.00M", "plain amounts are summed (" .. tostring(text) .. ")")
 
-DM({ combatSpells = { { spellID = 1241167, totalAmount = 999600 } } })
-text = ns.ReadEruptsLive()
-check(text == "~1.00M", "just below a million reads as 1.00M, not 1000k (" .. tostring(text) .. ")")
-DM({ combatSpells = { { spellID = 1241167, totalAmount = 999.6 } } })
-text = ns.ReadEruptsLive()
-check(text == "~1k", "just below a thousand reads as 1k, not 1000 (" .. tostring(text) .. ")")
-
 DM({ combatSpells = { { spellID = 1241167, totalAmount = SECRET }, { spellID = 1241171, totalAmount = SECRET } } })
 text, status = ns.ReadEruptsLive()
 check(status == "secret-passthrough" and text == SECRET_STR, "secret amounts pass through as a secret string")

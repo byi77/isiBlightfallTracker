@@ -1,7 +1,7 @@
 isiBlightfallTracker
 ====================
 
-Current version: 0.7.3 (2026-10-12).
+Current version: 0.7.2 (2026-10-11).
 
 Unholy Death Knight helper for Blightfall (German client: "Seuchensturz").
 Shows the expected Blightfall damage, tells you when to press it, and keeps

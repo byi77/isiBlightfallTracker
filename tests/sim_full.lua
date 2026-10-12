@@ -68,7 +68,7 @@ for _, fr in ipairs(STUB_FRAMES) do
   if fr.scripts.OnUpdate and not display then display = fr end
   if fr.scripts.OnEvent then events = fr end
 end
-local leaked = {}; for k in pairs(_G) do if not before[k] and k ~= "isiBlightfallTrackerDB" and k ~= "SLASH_ISIBLIGHTFALL1" and k ~= "CreateFrame" and k ~= "UIParent" and k ~= "FONTS" and k ~= "BARS" and k ~= "STUB_FRAMES" and k ~= "STUB_WINDOW" then leaked[#leaked+1] = k end end
+local leaked = {}; for k in pairs(_G) do if not before[k] and k ~= "isiBlightfallTrackerDB" and k ~= "SLASH_ISIBLIGHTFALL1" and k ~= "CreateFrame" and k ~= "UIParent" and k ~= "FONTS" and k ~= "BARS" and k ~= "STUB_FRAMES" then leaked[#leaked+1] = k end end
 LEAKED = leaked
 
 local escaped = 0

@@ -68,18 +68,11 @@ local function Widget(kind)
   }
   return setmetatable(w, { __index = function(_, k) return methods[k] or function() end end })
 end
-CreateFrame = function(kind, name)
+CreateFrame = function(kind)
   local f = Widget(kind or "Frame")
-  f.name = name
   if kind == "StatusBar" then table.insert(BARS, f) end
   table.insert(frames, f)
   return f
 end
 STUB_FRAMES = frames
--- The addon's main window (named), as opposed to the frame driving OnUpdate.
-function STUB_WINDOW()
-  for _, f in ipairs(frames) do
-    if f.name == "isiBlightfallTrackerFrame" then return f end
-  end
-end
 UIParent = {}

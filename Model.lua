@@ -41,12 +41,23 @@ local EXTENSION_BY_SPELL = {
 }
 
 -- Scourge Strike and Vampiric Strike apply Virulent Plague to their target when
--- it is not ticking (SimC scourge_strike_base_t::impact). Dread Plague is only
--- applied by Outbreak (or jumps on the host's death, which is not a cast).
+-- it is not ticking (SimC scourge_strike_base_t::impact). Putrefy with
+-- Blightburst applies whichever plague is not ticking (Virulent Plague via its
+-- area hit, Dread Plague via its single-target hit) and extends the ones that
+-- are (SimC putrefy_damage_base_t::trigger_blightburst). Guides follow
+-- Blightfall with Putrefy, so this re-applies the plagues Blightfall consumed.
 local VIRULENT_PLAGUE_APPLIERS = {
   [55090] = true, -- Scourge Strike
   [433895] = true, -- Vampiric Strike
   [434422] = true, -- Vampiric Strike (variant)
+  [1247378] = true, -- Putrefy (Blightburst)
+  [1277016] = true, -- Putrefy single target (Blightburst)
+  [390220] = true, -- Putrefy area (Blightburst)
+}
+local DREAD_PLAGUE_APPLIERS = {
+  [1247378] = true, -- Putrefy (Blightburst)
+  [1277016] = true, -- Putrefy single target (Blightburst)
+  [390220] = true, -- Putrefy area (Blightburst)
 }
 
 -- Eternal Agony (390268, part of Dark Transformation): every Death Coil and
@@ -124,6 +135,9 @@ end
 for id in pairs(VIRULENT_PLAGUE_APPLIERS) do
   ns.TRACKED_SPELLS[id] = true
 end
+for id in pairs(DREAD_PLAGUE_APPLIERS) do
+  ns.TRACKED_SPELLS[id] = true
+end
 for _, id in pairs(SPELL) do
   ns.TRACKED_SPELLS[id] = true
 end
@@ -132,7 +146,8 @@ local state = {
   ready = false,
   vpExpires = nil,
   dpExpires = nil,
-  duration = nil,
+  duration = nil, -- Virulent Plague
+  dpDuration = nil, -- Dread Plague (own tooltip, may differ)
   vpTotal = nil,
   dpTotal = nil,
   tooltipStatus = "unknown",
@@ -228,6 +243,7 @@ function Model.SampleTooltips()
     state.vpTotal = vpTotal
     state.dpTotal = dpTotal
     state.duration = vpDuration
+    state.dpDuration = dpDuration
     state.tooltipStatus = "ok"
   else
     state.vpTotal = nil
@@ -261,9 +277,8 @@ end
 -- Returns a short tag describing what the cast changed (for the log).
 function Model.OnPlayerCast(spellID, now)
   if spellID == SPELL.OUTBREAK then
-    local duration = state.duration or 24
-    state.vpExpires = now + duration
-    state.dpExpires = now + duration
+    state.vpExpires = now + (state.duration or 24)
+    state.dpExpires = now + (state.dpDuration or state.duration or 24)
     return "plagues-applied"
   end
   if spellID == SPELL.DARK_TRANSFORMATION then
@@ -297,19 +312,27 @@ function Model.OnPlayerCast(spellID, now)
     state.dtEndsAt = state.dtEndsAt + ETERNAL_AGONY_SECONDS
     table.insert(tags, "dt+" .. ETERNAL_AGONY_SECONDS)
   end
+  -- Ticking state before this cast: a plague the cast applies is not also
+  -- extended by it.
+  local vpTicking = Remaining(state.vpExpires, now) > 0
+  local dpTicking = Remaining(state.dpExpires, now) > 0
   local extension = EXTENSION_BY_SPELL[spellID]
   if extension then
-    if Remaining(state.vpExpires, now) > 0 then
+    if vpTicking then
       state.vpExpires = state.vpExpires + extension
     end
-    if Remaining(state.dpExpires, now) > 0 then
+    if dpTicking then
       state.dpExpires = state.dpExpires + extension
     end
     table.insert(tags, "extended+" .. extension)
   end
-  if VIRULENT_PLAGUE_APPLIERS[spellID] and Remaining(state.vpExpires, now) <= 0 then
+  if VIRULENT_PLAGUE_APPLIERS[spellID] and not vpTicking then
     state.vpExpires = now + (state.duration or 24)
     table.insert(tags, "vp-applied")
+  end
+  if DREAD_PLAGUE_APPLIERS[spellID] and not dpTicking then
+    state.dpExpires = now + (state.dpDuration or state.duration or 24)
+    table.insert(tags, "dp-applied")
   end
   return #tags > 0 and table.concat(tags, ",") or nil
 end
@@ -347,28 +370,40 @@ function Model.ResetCalibration()
   calibration.blightfallCasts = 0
 end
 
--- Blightfall shares its damage-meter rows (Virulent/Dread Plague Erupt) with
--- the erupts of Scourge Strike and Vampiric Strike. To split the post-combat
--- total, each strike's erupt is modelled from the live tooltip tick:
+-- Blightfall shares its damage-meter rows (Virulent/Dread Plague Erupt,
+-- 1241167 / 1241171) with the erupts of Scourge Strike, Vampiric Strike and
+-- Putrefy (Blightburst). To split the post-combat total, each erupt is
+-- modelled from the live tooltip:
 --   Scourge Strike: 35 % + Scourging rank 2 (65 %) = 100 % of one tick
 --   Vampiric Strike: same, x (1 + 75 % Infliction of Sorrow)
--- (SimC scourge_strike_base_t; values from the 12.1.0 spell data.)
+--   (SimC scourge_strike_base_t; values from the 12.1.0 spell data.)
+--   Putrefy: 35 % of the damage of the next 3 s of each ticking plague
+--   (Blightburst 1254552 effects #1 / #2, SimC trigger_blightburst).
 local STRIKE_ERUPT_MULT = { [55090] = 1.0, [433895] = 1.75, [434422] = 1.75 }
 local TICKS_PER_DURATION = 8
+local PUTREFY_ERUPT = { [1247378] = true, [1277016] = true, [390220] = true }
+local BLIGHTBURST_SECONDS = 3
+local BLIGHTBURST_SHARE = 0.35
 
 function Model.NoteEruptCast(spellID, now)
   local mult = STRIKE_ERUPT_MULT[spellID]
-  if not mult or state.tooltipStatus ~= "ok" then
+  local putrefy = PUTREFY_ERUPT[spellID]
+  if not (mult or putrefy) or state.tooltipStatus ~= "ok" then
     return
   end
+  local dpDuration = state.dpDuration or state.duration
   local erupt = 0
   if Remaining(state.vpExpires, now) > 0 then
-    erupt = erupt + state.vpTotal * Model.factors.vp / TICKS_PER_DURATION
+    erupt = erupt
+      + state.vpTotal * Model.factors.vp
+        * (putrefy and BLIGHTBURST_SHARE * BLIGHTBURST_SECONDS / state.duration or 1 / TICKS_PER_DURATION)
   end
   if Remaining(state.dpExpires, now) > 0 then
-    erupt = erupt + state.dpTotal * Model.factors.vp / TICKS_PER_DURATION
+    erupt = erupt
+      + state.dpTotal * Model.factors.vp
+        * (putrefy and BLIGHTBURST_SHARE * BLIGHTBURST_SECONDS / dpDuration or 1 / TICKS_PER_DURATION)
   end
-  calibration.strikeEruptExpected = calibration.strikeEruptExpected + erupt * mult
+  calibration.strikeEruptExpected = calibration.strikeEruptExpected + erupt * (mult or 1)
   calibration.strikeCasts = calibration.strikeCasts + 1
 end
 
@@ -440,7 +475,8 @@ end
 Model.ResetCalibration()
 
 function Model.Accumulate(elapsed, now)
-  if not state.duration or state.duration <= 0 then
+  local dpDuration = state.dpDuration or state.duration
+  if not state.duration or state.duration <= 0 or not dpDuration or dpDuration <= 0 then
     return
   end
   if Remaining(state.vpExpires, now) > 0 then
@@ -452,7 +488,7 @@ function Model.Accumulate(elapsed, now)
   if Remaining(state.dpExpires, now) > 0 then
     calibration.dpUptime = calibration.dpUptime + elapsed
     if state.dpTotal then
-      calibration.dpExpected = calibration.dpExpected + state.dpTotal / state.duration * elapsed
+      calibration.dpExpected = calibration.dpExpected + state.dpTotal / dpDuration * elapsed
     end
   end
 end
@@ -511,14 +547,15 @@ function Model.Evaluate(now)
   end
   result.enemies, result.enemyDiag = enemyCache.count, enemyCache.diag
 
-  if state.tooltipStatus == "ok" and state.duration and state.duration > 0 then
+  local dpDuration = state.dpDuration or state.duration
+  if state.tooltipStatus == "ok" and state.duration and state.duration > 0 and dpDuration and dpDuration > 0 then
     -- Extensions push the remaining time past the base duration; those are
     -- real extra ticks, so the remaining time is not capped.
     -- Dread Plague uses the Virulent Plague factor: both are shadow DoTs with
     -- the same multipliers, and the learned DP factor is inflated because the
     -- model misses Dread Plague jumping to a new host (uptime underestimated).
     -- factors.dp is still learned and logged for offline analysis.
-    local dpPart = state.dpTotal * factors.vp * remDP / state.duration
+    local dpPart = state.dpTotal * factors.vp * remDP / dpDuration
     local vpPart = state.vpTotal * factors.vp * remVP / state.duration
     result.estimateSingle = BLIGHTFALL_REMAINING_SHARE * (dpPart + vpPart)
     local targets = math.max(result.enemies, remVP > 0 and 1 or 0)
@@ -549,6 +586,7 @@ function Model.Evaluate(now)
   result.dtTotal = state.dtEndsAt and state.darkTransformationAt and (state.dtEndsAt - state.darkTransformationAt)
     or nil
   result.plagueDuration = state.duration
+  result.dpDuration = dpDuration
 
   -- Once a "now" rule fires the signal latches until Blightfall is cast, so
   -- the cue cannot flicker back to "charging" (and is announced once).

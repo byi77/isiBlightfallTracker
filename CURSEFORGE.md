@@ -88,7 +88,7 @@ Since patch 12.0 Blizzard hides most combat data from addons (**"secret values"*
 
 The **plague rows** use the game's own aura display, which may *show* the real time but never hands the number to an addon. For the damage estimate the addon therefore rebuilds the picture from what it is allowed to see: **your own casts**, the **live tooltip of your plagues** (the game still computes it with your current stats and talents) and a **correction factor** it learns after single-target fights, when the damage meter is readable again.
 
-**Actual (estimated)** is calculated as well: Blightfall has no damage meter line of its own - its damage is counted together with the erupts of Scourge Strike, Vampiric Strike and Putrefy. The addon subtracts a calculated share for those. On a single target that works reasonably; in big pulls other erupt sources hit many targets and the value becomes unreliable.
+**Actual (estimated)** is calculated as well: Blightfall has no damage meter line of its own - its damage is counted together with the erupts of Scourge Strike, Vampiric Strike and Putrefy. The addon subtracts a calculated share for those (Putrefy with Blightburst: 35 % of the next 3 seconds of each plague). On a single target that works reasonably; in big pulls other erupt sources hit many targets and the value becomes unreliable.
 
 **Enemies** is an upper bound for the all-target value - which enemies really carry Virulent Plague is hidden in combat. Turn on enemy nameplates (default key **V**) so they can be counted.
 

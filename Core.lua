@@ -14,6 +14,10 @@ local inCombat = false
 local lastSignal
 local lastSample = 0
 local combatIndex = 0
+-- True for a combat that was already running when the addon loaded (/reload
+-- in combat): its calibration covers only part of the fight, while the damage
+-- meter covers all of it, so it is not learned from.
+local partialCombat = false
 
 -- Helpers ---------------------------------------------------------------------
 
@@ -112,9 +116,11 @@ local function FormatAmount(value)
   if not value then
     return "?"
   end
-  if value >= 1e6 then
+  -- Thresholds sit where the rounded text would reach the next unit, so
+  -- 999,600 reads "1.00M" instead of "1000k".
+  if value >= 999500 then
     return string.format("%.2fM", value / 1e6)
-  elseif value >= 1e3 then
+  elseif value >= 999.5 then
     return string.format("%.0fk", value / 1e3)
   end
   return tostring(math.floor(value + 0.5))
@@ -233,6 +239,12 @@ end
 ns.ReadEruptsLive = ReadEruptsLive
 
 local function ReadDamageMeter(attempt, snapshot)
+  -- The meter's "current session" belongs to the newest combat: once another
+  -- combat has started, this snapshot no longer matches what it reports.
+  if inCombat or (snapshot and snapshot.combat ~= combatIndex) then
+    Log.Add("dm", { status = "superseded", attempt = attempt, combat = snapshot and snapshot.combat })
+    return
+  end
   local api = rawget(_G, "C_DamageMeter")
   if type(api) ~= "table" or type(api.GetCombatSessionSourceFromType) ~= "function" then
     Log.Add("dm", { status = "unavailable" })
@@ -285,7 +297,8 @@ local function ReadDamageMeter(attempt, snapshot)
   end)
   -- Blightfall's share of the erupt rows = total minus the modelled strike
   -- erupts. Average per cast, compared with the average prediction.
-  if readOk and snapshot and masked == 0 and (snapshot.blightfallCasts or 0) > 0 then
+  local complete = readOk and snapshot and masked == 0 and not snapshot.partial
+  if complete and (snapshot.blightfallCasts or 0) > 0 then
     local derived = math.max(0, eruptTotal - snapshot.strikeEruptExpected)
     lastSplit = {
       casts = snapshot.blightfallCasts,
@@ -302,7 +315,9 @@ local function ReadDamageMeter(attempt, snapshot)
       predictedPerCast = math.floor(lastSplit.predictedPerCast),
     })
   end
-  if readOk and snapshot and masked == 0 then
+  if readOk and snapshot and snapshot.partial then
+    Log.Add("calibration", { combat = combatIndex, skipped = "partial-combat" })
+  elseif complete then
     local learned = Model.Learn(snapshot, actualVP, actualDP)
     learned.combat = combatIndex
     learned.actualVP, learned.actualDP = actualVP, actualDP
@@ -648,9 +663,10 @@ local function Render(result)
     dpBar:SetValue(0)
     dpBar.valueText:SetText("")
   else
-    local duration = result.plagueDuration or 0
-    SetBar(vpBar, result.remVP, math.max(duration, result.remVP))
-    SetBar(dpBar, result.remDP, math.max(duration, result.remDP))
+    local vpDuration = result.plagueDuration or 0
+    local dpDuration = result.dpDuration or vpDuration
+    SetBar(vpBar, result.remVP, math.max(vpDuration, result.remVP))
+    SetBar(dpBar, result.remDP, math.max(dpDuration, result.remDP))
   end
 
   -- One status row: while the Soul Reaper debuff runs (and adds 20 % to the
@@ -720,7 +736,16 @@ local function IsNowSignal(signal)
   return type(signal) == "string" and signal:find("^now%-") ~= nil
 end
 
+-- The cue plays at most once per Blightfall window, even when the signal
+-- leaves "now" in between (plagues ran out and were re-applied). A Dark
+-- Transformation starts a new window, Blightfall ends it.
+local windowCued = false
+
 local function PlayGoSound(signal)
+  if windowCued then
+    return
+  end
+  windowCued = true
   local played, choice, channel = ns.Sound.Play(false)
   if choice then
     Log.Add("sound", { signal = signal, played = played, choice = choice, channel = channel })
@@ -785,8 +810,16 @@ local function OnUpdate(_, elapsed)
   Render(result)
 end
 
+-- The model runs on its own frame: a hidden frame gets no OnUpdate, and the
+-- window is hidden by the "combat only" / "ready only" options while the
+-- calibration, enemy count and signal must keep running.
+local driver = CreateFrame("Frame")
+driver:Show()
 local guardedUpdate = Guard("OnUpdate", OnUpdate)
-frame:SetScript("OnUpdate", function(self, elapsed)
+driver:SetScript("OnUpdate", function(self, elapsed)
+  if not active then
+    return
+  end
   guardedUpdate(self, elapsed)
   if ns.disabledSites.OnUpdate then
     -- Stop updating for good and say so instead of erroring every frame.
@@ -1003,7 +1036,6 @@ end
 
 SafeRegister("PLAYER_LOGIN")
 SafeRegister("PLAYER_ENTERING_WORLD")
-SafeRegister("PLAYER_SPECIALIZATION_CHANGED")
 SafeRegister("PLAYER_REGEN_DISABLED")
 SafeRegister("PLAYER_REGEN_ENABLED")
 SafeRegister("ENCOUNTER_START")
@@ -1012,7 +1044,16 @@ SafeRegister("CHALLENGE_MODE_START")
 SafeRegister("CHALLENGE_MODE_COMPLETED")
 SafeRegister("ADDON_RESTRICTION_STATE_CHANGED")
 SafeRegister("PLAYER_TARGET_CHANGED")
-events:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
+-- Unit events for the player only (PLAYER_SPECIALIZATION_CHANGED also fires
+-- for group members).
+local function SafeRegisterPlayer(eventName)
+  local ok = pcall(events.RegisterUnitEvent, events, eventName, "player")
+  if not ok then
+    Log.Add("error", { where = "RegisterUnitEvent", event = eventName })
+  end
+end
+SafeRegisterPlayer("PLAYER_SPECIALIZATION_CHANGED")
+SafeRegisterPlayer("UNIT_SPELLCAST_SUCCEEDED")
 
 local function OnPlayerCast(spellID)
   if ns.IsSecret(spellID) then
@@ -1040,6 +1081,9 @@ local function OnPlayerCast(spellID)
   end
   local wasReady = Model.state.ready
   local effect = Model.OnPlayerCast(spellID, now)
+  if spellID == SPELL.DARK_TRANSFORMATION or spellID == SPELL.BLIGHTFALL then
+    windowCued = false
+  end
   if Model.state.ready ~= wasReady then
     -- "Ready only" window: Dark Transformation shows it, Blightfall hides it.
     UpdateVisibility()
@@ -1090,6 +1134,14 @@ local function OnEvent(_, event, ...)
       pcall(C_Spell.RequestLoadSpellData, SPELL.DREAD_PLAGUE)
     end
     UpdateActivation("login")
+    -- /reload in combat: PLAYER_REGEN_DISABLED has already fired.
+    if active and InCombatLockdown() then
+      inCombat = true
+      partialCombat = true
+      combatIndex = combatIndex + 1
+      Model.ResetCalibration()
+      UpdateVisibility()
+    end
     return
   end
   if event == "PLAYER_TARGET_CHANGED" then
@@ -1119,6 +1171,7 @@ local function OnEvent(_, event, ...)
     OnPlayerCast(spellID)
   elseif event == "PLAYER_REGEN_DISABLED" then
     inCombat = true
+    partialCombat = false
     UpdateVisibility()
     combatIndex = combatIndex + 1
     lastSample = 0
@@ -1154,6 +1207,7 @@ local function OnEvent(_, event, ...)
       blightfallCasts = calibration.blightfallCasts,
     })
     local snapshot = {
+      combat = combatIndex,
       vpExpected = calibration.vpExpected,
       dpExpected = calibration.dpExpected,
       maxEnemies = calibration.maxEnemies,
@@ -1161,7 +1215,9 @@ local function OnEvent(_, event, ...)
       strikeEruptExpected = calibration.strikeEruptExpected,
       blightfallPredicted = calibration.blightfallPredicted,
       blightfallCasts = calibration.blightfallCasts,
+      partial = partialCombat,
     }
+    partialCombat = false
     Model.ResetCombatState()
     C_Timer.After(1.5, function()
       readDamageMeterGuarded(1, snapshot)
@@ -1193,7 +1249,8 @@ end)
 
 SLASH_ISIBLIGHTFALL1 = "/ibt"
 SlashCmdList.ISIBLIGHTFALL = Guard("Slash", function(message)
-  message = (message or ""):lower()
+  -- Case, surrounding and repeated spaces do not matter ("/ibt  Log on ").
+  message = tostring(message or ""):lower():gsub("%s+", " "):match("^ ?(.-) ?$")
   if message == "reset" then
     ResetPosition()
   elseif message == "options" or message == "optionen" or message == "config" then

@@ -48,6 +48,15 @@ jobs:
             exit 1
           fi
           echo "Tag version ${RELEASE_VERSION} matches the TOC."
+      - name: Verify release notes name this version
+        run: |
+          set -euo pipefail
+          # The notes go to GitHub and CurseForge; stale notes from the last
+          # release must not be published under the new version.
+          if ! head -n 1 CHANGELOG_RELEASE.md | grep -qF " ${RELEASE_VERSION}"; then
+            echo "CHANGELOG_RELEASE.md must start with a heading naming ${RELEASE_VERSION}."
+            exit 1
+          fi
       - name: Build package
         run: |
           set -euo pipefail
@@ -123,7 +132,8 @@ jobs:
               --write-out "%{http_code}" \
               --form "metadata=<${METADATA};type=application/json" \
               --form "file=@${RELEASE_ASSET};type=application/zip" \
-              "https://wow.curseforge.com/api/projects/${CURSE_PROJECT_ID}/upload-file?token=${CF_API_KEY}"
+              --header "X-Api-Token: ${CF_API_KEY}" \
+              "https://wow.curseforge.com/api/projects/${CURSE_PROJECT_ID}/upload-file"
           )"
           if [ "${HTTP_CODE}" -lt 200 ] || [ "${HTTP_CODE}" -ge 300 ]; then
             echo "CurseForge upload failed with HTTP ${HTTP_CODE}."

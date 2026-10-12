@@ -38,10 +38,15 @@ ns.Round = Round
 -- Creates the SavedVariables table (settings live here even with the log off).
 function Log.InitDB()
   -- The SavedVariables table must be a global named as in the .toc.
-  _G.isiBlightfallTrackerDB = _G.isiBlightfallTrackerDB or {}
+  -- A damaged file (wrong types) is replaced, so the login always completes.
+  if type(_G.isiBlightfallTrackerDB) ~= "table" then
+    _G.isiBlightfallTrackerDB = {}
+  end
   local db = _G.isiBlightfallTrackerDB
   db.schema = 1
-  db.sessions = db.sessions or {}
+  if type(db.sessions) ~= "table" then
+    db.sessions = {}
+  end
 end
 
 -- The log is off by default (opt-in via /ibt log on).

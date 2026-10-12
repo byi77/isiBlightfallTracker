@@ -87,9 +87,8 @@ local function Boot(locale, withSharedMedia, savedDB)
   for _, file in ipairs({ "Locale.lua", "Log.lua", "Settings.lua", "Model.lua", "Sound.lua", "Core.lua", "PlagueAuras.lua", "Options.lua" }) do
     assert(loadfile(dir .. "/" .. file))("isiBlightfallTracker", ns)
   end
-  local display, events
+  local display, events = STUB_WINDOW(), nil
   for _, fr in ipairs(STUB_FRAMES) do
-    if fr.scripts.OnUpdate and not display then display = fr end
     if fr.scripts.OnEvent then events = fr end
   end
   events.scripts.OnEvent(events, "PLAYER_LOGIN")

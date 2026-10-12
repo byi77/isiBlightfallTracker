@@ -1,7 +1,7 @@
 isiBlightfallTracker
 ====================
 
-Current version: 0.7.1 (2026-10-10).
+Current version: 0.7.2 (2026-10-11).
 
 Unholy Death Knight helper for Blightfall (German client: "Seuchensturz").
 Shows the expected Blightfall damage, tells you when to press it, and keeps
@@ -58,8 +58,14 @@ Soul Reaper expiry only triggers this signal when Dark Transformation also
 has at most 3 seconds left (including extensions). Dark Transformation can
 trigger on its own in its final 3 seconds or after it ends. The first "NOW"
 reason stays latched, so a later expiry does not produce a second voice cue
-in the same Blightfall window. Casting
-Blightfall consumes the window; a new Dark Transformation starts a new one.
+in the same Blightfall window - also not when the plagues ran out and were
+re-applied in between. Casting Blightfall consumes the window; a new Dark
+Transformation starts a new one.
+
+Putrefy with Blightburst re-applies plagues that are not ticking (both
+plagues on your target) and extends the ones that are by 3 s. Guides
+follow Blightfall with Putrefy, so the plague rows fill up again right
+after Blightfall.
 
 Drag the window with the left mouse button. Size, background
 transparency, border, lock, sound, channel and language are set in the
@@ -123,8 +129,9 @@ rebuilds that from what it may see:
 
 "Actual (estimated)" is an estimate too: Blightfall has no damage meter line of
 its own. Its damage is counted together with the erupts of Scourge
-Strike, Vampiric Strike and Putrefy. The addon subtracts a calculated
-share for those. That works reasonably on a single target; in large
+Strike, Vampiric Strike and Putrefy (Blightburst: 35 % of the next
+3 s of each plague). The addon subtracts a calculated share for those.
+That works reasonably on a single target; in large
 pulls other erupt sources hit many targets and the value becomes
 unreliable.
 
@@ -210,7 +217,9 @@ Restzeit hat, inklusive Verlängerungen), oder bevor die Seuchen auslaufen.
 
 Die Auslöser gehören zum selben Zündsignal: Der erste Grund bleibt stehen,
 und die Ansage ertönt einmal pro Seuchensturz-Fenster. Ein späteres DT-Ende
-erzeugt im selben Fenster keine zweite Ansage. Seuchensturz verbraucht das
+erzeugt im selben Fenster keine zweite Ansage, auch nicht nach neu
+gesetzten Seuchen. Putrefy (mit Blightburst) setzt fehlende Seuchen neu
+und verlängert laufende um 3 s. Seuchensturz verbraucht das
 Fenster; eine neue Dunkle Verwandlung startet ein neues.
 
 Verlässlich: Bereitschaft, DT-Balken (15 s + 1 s je Todesmantel/Epidemie),

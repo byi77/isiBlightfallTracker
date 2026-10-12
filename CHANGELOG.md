@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- "Actual (estimated)" also subtracts Putrefy's erupts: with Blightburst, Putrefy erupts 35 % of the next 3 seconds of each ticking plague into the same damage meter rows as Blightfall (SimulationCraft `trigger_blightburst`, Blightburst 1254552). The value was too high before.
+- Dread Plague uses the duration from its own tooltip for the timer, the estimate and the calibration (both plagues are 24 s, 18 s with Ebon Fever, so the numbers do not change today).
+
+### Fixed
+- Putrefy with Blightburst re-applies plagues that are not ticking. Guides follow Blightfall with Putrefy (Blightfall resets its cooldown); until now the plague rows stayed empty and the estimate stayed at 0 until the next Outbreak.
+- The voice cue plays at most once per Blightfall window, as documented. Plagues that ran out and were re-applied in the same window triggered a second cue.
+- With "Show only in combat" or "Show only when Blightfall is ready", the calibration, enemy count and log kept running only while the window was visible, so the learned correction factor could be based on part of the fight. They now run whether the window is shown or not.
+- After a /reload in combat the addon knows it is in combat: the combat-only window shows right away, and that partial fight is not used for calibration.
+- On a chain pull, the post-combat damage-meter readout could land in the next fight and learn from the wrong numbers. A readout for an older fight is now dropped.
+- A damaged saved file (wrong type for the whole table or the log sessions) no longer stops the addon at login.
+- Commands with extra spaces (`/ibt log on ` from chat history or a macro) work instead of showing the help.
+- Large numbers just below a unit read "1.00M" / "1k" instead of "1000k" / "1000".
+
+### Release
+- The CurseForge token is sent as a header instead of in the upload URL.
+- A release is refused when `CHANGELOG_RELEASE.md` does not name the tagged version.
+
 ## 2026-10-11 - Version 0.7.2
 
 ### Fixed

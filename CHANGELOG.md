@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-14 - Version 0.7.8
+
+- Declare WoW Retail 12.1.5 (TOC interface `120105`) as the supported client patch.
+
 ## 2026-10-12 - Version 0.7.7
 
 0.7.3 was never published; its changes ship with this version.

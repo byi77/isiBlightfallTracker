@@ -2,7 +2,7 @@
 
 **Know what your Blightfall will hit for - and when to press it.**
 
-A small, self-contained helper for **Unholy Death Knights** (Retail 12.1, Midnight). It shows the expected damage of **Blightfall** (German: *Seuchensturz*), tells you the right moment to press it with a visual signal and, at the end of Dark Transformation, a voice cue, shows the real time left on your plagues, and learns from your own fights.
+A small, self-contained helper for **Unholy Death Knights** (Retail 12.1.5, Midnight). It shows the expected damage of **Blightfall** (German: *Seuchensturz*), tells you the right moment to press it with a visual signal and, at the end of Dark Transformation, a voice cue, shows the real time left on your plagues, and learns from your own fights.
 
 Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: it switches itself on for Unholy and stays hidden otherwise.
 
@@ -10,7 +10,11 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 
 ---
 
-## What's new in 0.7.7
+## What's new in 0.7.8
+
+- Updated the declared WoW Retail patch to 12.1.5 (TOC interface `120105`).
+
+## Previous update: 0.7.7
 
 - **DK helpers:** Soul Reaper and Putrefy button crosses, horse-sound muting and a
   movable missing-ghoul reminder have moved here from isiLive. Existing choices

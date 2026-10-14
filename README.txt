@@ -1,13 +1,13 @@
 isiBlightfallTracker
 ====================
 
-Current version: 0.7.7 (2026-10-12).
+Current version: 0.7.8 (2026-10-14).
 
 Unholy Death Knight helper for Blightfall (German client: "Seuchensturz").
 Shows the expected Blightfall damage, tells you when to press it, and keeps
 a local log so the estimate can be checked against what really happened.
 
-World of Warcraft Retail 12.1 (Midnight). Works in the open world, dungeons,
+World of Warcraft Retail 12.1.5 (Midnight; TOC interface 120105). Works in the open world, dungeons,
 Mythic+ keystones and raids.
 
 

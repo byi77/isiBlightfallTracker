@@ -1,3 +1,5 @@
-## isiBlightfallTracker 0.7.8
+## isiBlightfallTracker 0.7.9
 
-- Updated the declared WoW Retail patch to 12.1.5 (TOC interface `120105`).
+- **Off without Blightfall:** on an Unholy build without the Blightfall talent the tracker stays off (no window, no voice cue) and comes back by itself when you talent it again. No more switching it off by hand for solo builds.
+- `/ibt` tells you when the tracker is off because Blightfall is not talented.
+- The Death Knight helpers keep working independently of the talent.

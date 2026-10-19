@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-19 - Version 0.7.9
+
+### Added
+- The tracker only switches on with the Blightfall talent. On an Unholy build without
+  Blightfall (for example a solo build) it stays off: no window, no voice cue.
+  Talent and loadout changes are picked up at once, so it comes back by itself when
+  Blightfall is talented again. Player request.
+- The talent is found in the active loadout by spell ID or by its localized name. If the
+  loadout cannot be read, the tracker stays on (fail open), and a Blightfall cast always
+  switches it on until the next talent or spec change.
+- `/ibt` says when the tracker is off because Blightfall is not talented.
+- The self-test and activation log entries record the Blightfall talent check.
+
+The Death Knight helpers (Soul Reaper/Putrefy crosses, ghoul reminder, horse sounds)
+are not affected by the talent and keep following their own options.
+
 ## 2026-10-14 - Version 0.7.8
 
 - Declare WoW Retail 12.1.5 (TOC interface `120105`) as the supported client patch.

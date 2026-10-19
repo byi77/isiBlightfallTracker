@@ -81,6 +81,25 @@ local function IsUnholy()
   return specID == UNHOLY_SPEC_ID
 end
 
+-- Players who swap to a build without Blightfall need no window. A Blightfall
+-- cast proves the talent even if the loadout check got it wrong; it counts
+-- until the talents or the spec change.
+local blightfallCastSeen = false
+local hasBlightfallTalent -- last check: true, false or nil (unknown)
+
+local function HasBlightfall()
+  if blightfallCastSeen then
+    return true
+  end
+  -- Talents cannot change in combat, so the last check stays valid there.
+  if not InCombatLockdown() or hasBlightfallTalent == nil then
+    hasBlightfallTalent = Model.HasBlightfallTalent()
+  end
+  -- Unknown counts as talented (fail open): better a window too many than
+  -- a tracker that never switches on.
+  return hasBlightfallTalent ~= false
+end
+
 local function RestrictionStates()
   local result = {}
   local api = rawget(_G, "C_RestrictedActions")
@@ -153,8 +172,10 @@ local function SelfTest(reason)
   local tooltip = Model.SampleTooltips()
   local hasReaping = Model.RefreshTalents()
   local hasBlightburst = Model.HasBlightburstTalent()
+  local hasBlightfall = Model.HasBlightfallTalent()
   Log.Add("selftest", {
     reason = reason,
+    blightfall = hasBlightfall == nil and "unknown" or hasBlightfall,
     reaping = hasReaping == nil and "unknown" or hasReaping,
     blightburst = hasBlightburst == nil and "unknown" or hasBlightburst,
     inCombat = InCombatLockdown(),
@@ -1010,12 +1031,17 @@ ns.UI = {
 }
 
 local function UpdateActivation(reason)
-  local shouldBeActive = IsUnholy()
+  local shouldBeActive = IsUnholy() and HasBlightfall()
   if shouldBeActive == active then
     return
   end
   active = shouldBeActive
-  Log.Add("activation", { active = active, reason = reason })
+  Log.Add("activation", {
+    active = active,
+    reason = reason,
+    talent = hasBlightfallTalent == nil and "unknown" or hasBlightfallTalent,
+    castSeen = blightfallCastSeen,
+  })
   -- /reload in combat: PLAYER_REGEN_DISABLED has already fired. Checked on
   -- every activation, since the spec may only be known after PLAYER_LOGIN.
   if active and not inCombat and InCombatLockdown() then
@@ -1051,6 +1077,8 @@ SafeRegister("CHALLENGE_MODE_START")
 SafeRegister("CHALLENGE_MODE_COMPLETED")
 SafeRegister("ADDON_RESTRICTION_STATE_CHANGED")
 SafeRegister("PLAYER_TARGET_CHANGED")
+SafeRegister("TRAIT_CONFIG_UPDATED")
+SafeRegister("PLAYER_TALENT_UPDATE")
 -- Unit events for the player only (PLAYER_SPECIALIZATION_CHANGED also fires
 -- for group members).
 local function SafeRegisterPlayer(eventName)
@@ -1163,12 +1191,27 @@ local function OnEvent(_, event, ...)
   if event == "ENCOUNTER_START" or event == "ENCOUNTER_END" or event == "PLAYER_ENTERING_WORLD" then
     Model.SetBossEncounter(event == "ENCOUNTER_START")
   end
+  if event == "TRAIT_CONFIG_UPDATED" or event == "PLAYER_TALENT_UPDATE" then
+    blightfallCastSeen = false
+    UpdateActivation(event)
+    return
+  end
   if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_SPECIALIZATION_CHANGED" then
+    if event == "PLAYER_SPECIALIZATION_CHANGED" then
+      blightfallCastSeen = false
+    end
     UpdateActivation(event)
     if active then
       Log.Add("zone", InstanceContext())
     end
     return
+  end
+  if not active and event == "UNIT_SPELLCAST_SUCCEEDED" then
+    local _, _, spellID = ...
+    if not ns.IsSecret(spellID) and spellID == SPELL.BLIGHTFALL then
+      blightfallCastSeen = true
+      UpdateActivation("blightfall-cast")
+    end
   end
   if not active then
     return
@@ -1309,5 +1352,8 @@ SlashCmdList.ISIBLIGHTFALL = Guard("Slash", function(message)
   else
     print(addonName .. ": " .. L.HELP)
     print(addonName .. ": " .. DiagnosticsText())
+    if not active and IsUnholy() and not HasBlightfall() then
+      print(addonName .. ": " .. L.INACTIVE_NO_TALENT)
+    end
   end
 end)

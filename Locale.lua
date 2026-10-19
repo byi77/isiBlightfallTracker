@@ -64,6 +64,7 @@ local enUS = {
   WINDOW_ALWAYS = "always",
   WINDOW_READY_ONLY_SUFFIX = ", only when Blightfall is ready",
   OPTIONS_UNAVAILABLE = "the options page is not available in this client",
+  INACTIVE_NO_TALENT = "inactive: Blightfall is not talented (switches on by itself when you talent it)",
   -- sounds and channels
   SOUND_GOGO = "Voice: Go! Go!",
   SOUND_RAID_WARNING = "Raid warning",
@@ -170,6 +171,7 @@ local deDE = {
   WINDOW_ALWAYS = "immer",
   WINDOW_READY_ONLY_SUFFIX = ", nur wenn Seuchensturz bereit",
   OPTIONS_UNAVAILABLE = "die Einstellungsseite ist in diesem Client nicht verfügbar",
+  INACTIVE_NO_TALENT = "inaktiv: Seuchensturz ist nicht geskillt (schaltet sich von selbst ein, sobald du es skillst)",
   -- sounds and channels
   SOUND_GOGO = "Sprache: Go! Go!",
   SOUND_RAID_WARNING = "Schlachtzugswarnung",

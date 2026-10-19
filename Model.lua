@@ -137,6 +137,94 @@ end
 function Model.HasBlightburstTalent()
   return IsSpellKnown(BLIGHTBURST_TALENT)
 end
+
+-- Plain return value of an API call, or nil when it fails or is secret.
+local function PlainCall(fn, ...)
+  if type(fn) ~= "function" then
+    return nil
+  end
+  local ok, value = pcall(fn, ...)
+  if not ok or ns.IsSecret(value) then
+    return nil
+  end
+  return value
+end
+
+local function Field(object, key)
+  if type(object) ~= "table" or ns.IsSecret(object) then
+    return nil
+  end
+  return PlainCall(function()
+    return object[key]
+  end)
+end
+
+-- Scans the active talent loadout for a purchased node whose spell is
+-- Blightfall, by spell ID or by localized name (the talent's own spell ID
+-- may differ from the button spell). Returns true/false, or nil when the
+-- loadout cannot be read (API missing, data not loaded yet, secret values).
+local function ScanTalentsForBlightfall()
+  local classTalents, traits = rawget(_G, "C_ClassTalents"), rawget(_G, "C_Traits")
+  if type(classTalents) ~= "table" or type(traits) ~= "table" then
+    return nil
+  end
+  local configID = PlainCall(classTalents.GetActiveConfigID)
+  local config = configID and PlainCall(traits.GetConfigInfo, configID)
+  local treeIDs = config and Field(config, "treeIDs")
+  if type(treeIDs) ~= "table" or #treeIDs == 0 then
+    return nil
+  end
+  local wantedName = C_Spell and PlainCall(C_Spell.GetSpellName, SPELL.BLIGHTFALL)
+  local function Matches(spellID)
+    if type(spellID) ~= "number" or spellID == 0 then
+      return false
+    end
+    if spellID == SPELL.BLIGHTFALL then
+      return true
+    end
+    return wantedName ~= nil and PlainCall(C_Spell.GetSpellName, spellID) == wantedName
+  end
+  local scanned = 0
+  for _, treeID in ipairs(treeIDs) do
+    local nodeIDs = PlainCall(traits.GetTreeNodes, treeID)
+    for _, nodeID in ipairs(type(nodeIDs) == "table" and nodeIDs or {}) do
+      local node = PlainCall(traits.GetNodeInfo, configID, nodeID)
+      local rank = node and Field(node, "activeRank")
+      local entry = node and Field(node, "activeEntry")
+      local entryID = entry and Field(entry, "entryID")
+      if type(rank) == "number" then
+        scanned = scanned + 1
+      end
+      if type(rank) == "number" and rank > 0 and entryID then
+        local entryInfo = PlainCall(traits.GetEntryInfo, configID, entryID)
+        local definitionID = entryInfo and Field(entryInfo, "definitionID")
+        local definition = definitionID and PlainCall(traits.GetDefinitionInfo, definitionID)
+        if
+          definition
+          and (Matches(Field(definition, "spellID")) or Matches(Field(definition, "overriddenSpellID")))
+        then
+          return true
+        end
+      end
+    end
+  end
+  -- No readable node at all means the loadout is not loaded, not "untalented".
+  if scanned == 0 then
+    return nil
+  end
+  return false
+end
+
+-- Blightfall is a 1-point Unholy talent. Returns true/false, or nil when the
+-- client offers no way to tell (the caller then stays active: fail open).
+-- The spellbook check is trusted only when it says "known": an override
+-- spell may not be reported as known even when talented.
+function Model.HasBlightfallTalent()
+  if IsSpellKnown(SPELL.BLIGHTFALL) == true then
+    return true
+  end
+  return ScanTalentsForBlightfall()
+end
 local SIGNAL_LEAD_SECONDS = 3 -- about two global cooldowns
 
 ns.TRACKED_SPELLS = {}

@@ -4,13 +4,19 @@
 
 A small, self-contained helper for **Unholy Death Knights** (Retail 12.1.5, Midnight). It shows the expected damage of **Blightfall** (German: *Seuchensturz*), tells you the right moment to press it with a visual signal and, at the end of Dark Transformation, a voice cue, shows the real time left on your plagues, and learns from your own fights.
 
-Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: it switches itself on for Unholy and stays hidden otherwise.
+Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: it switches itself on for Unholy with the Blightfall talent and stays hidden otherwise.
 
 <!-- Animation: upload media/isiBlightfallTracker.gif under "Images" in the CurseForge project and insert it here. -->
 
 ---
 
-## What's new in 0.7.8
+## What's new in 0.7.9
+
+- **Off without Blightfall:** on an Unholy build without the Blightfall talent (for example a solo build) the tracker stays off - no window, no voice cue - and comes back by itself when you talent it again.
+- `/ibt` tells you when the tracker is off because Blightfall is not talented.
+- The Death Knight helpers keep working independently of the talent.
+
+## Previous update: 0.7.8
 
 - Updated the declared WoW Retail patch to 12.1.5 (TOC interface `120105`).
 

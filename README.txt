@@ -1,11 +1,16 @@
 isiBlightfallTracker
 ====================
 
-Current version: 0.7.8 (2026-10-14).
+Current version: 0.7.9 (2026-10-19).
 
 Unholy Death Knight helper for Blightfall (German client: "Seuchensturz").
 Shows the expected Blightfall damage, tells you when to press it, and keeps
 a local log so the estimate can be checked against what really happened.
+
+The tracker only switches on while you play Unholy with the Blightfall
+talent. On a build without Blightfall it stays off (no window, no cue) and
+comes back by itself when you talent it again. The Death Knight helpers
+(options page) work independently of this.
 
 World of Warcraft Retail 12.1.5 (Midnight; TOC interface 120105). Works in the open world, dungeons,
 Mythic+ keystones and raids.
@@ -222,6 +227,8 @@ Deutsch - Kurzfassung
 -----------------------------------------------------------------------
 Zeigt den erwarteten Schaden von Seuchensturz, sagt mit Signal und
 Ansage "Go! Go!", wann du zünden sollst, und protokolliert alles lokal.
+Aktiv nur als Unheilig mit dem Talent Seuchensturz; ohne das Talent bleibt
+der Tracker aus und schaltet sich beim Zurückskillen von selbst wieder ein.
 
 Zündsignal: kurz vor Ende der Dunklen Verwandlung, kurz vor Ende des
 Seelenernter-Debuffs (mit Talent "Reaping"; bei bis zu 3 Gegnern oder in

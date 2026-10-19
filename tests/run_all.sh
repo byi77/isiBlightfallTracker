@@ -40,6 +40,7 @@ run "DK migration" lua "${T}/test_dk_migration.lua" "${ROOT}" "${T}/frame_stub.l
 run "retained DK helpers" lua "${T}/test_dk_assist.lua" "${ROOT}"
 run "DT cue once per phase" lua "${T}/test_dt_cue.lua" "${ROOT}" plain
 run "SR and DT overlap" lua "${T}/test_sr_dt_overlap.lua" "${ROOT}" plain
+run "Blightfall talent gate" lua "${T}/test_talent_gate.lua" "${ROOT}" "${T}/frame_stub.lua"
 
 if [ "${FAILED}" -ne 0 ]; then
   echo "Some tests failed."

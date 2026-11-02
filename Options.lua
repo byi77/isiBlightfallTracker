@@ -62,6 +62,21 @@ local function AddHeader(layout, text)
   end
 end
 
+-- Grey note line under the control above it (template in Options.xml).
+local function AddNote(api, layout, text)
+  if type(api.CreateElementInitializer) ~= "function" or not layout or type(layout.AddInitializer) ~= "function" then
+    return
+  end
+  local ok, initializer = pcall(api.CreateElementInitializer, "isiBlightfallTrackerNoteTemplate", { text = text })
+  if not ok or type(initializer) ~= "table" then
+    return
+  end
+  function initializer:InitFrame(frame)
+    frame.Text:SetText(self.data.text)
+  end
+  layout:AddInitializer(initializer)
+end
+
 local function PercentFormatter(value)
   return string.format("%d%%", math.floor(value * 100 + 0.5))
 end
@@ -92,6 +107,7 @@ function Options.Register()
     end
     return container:GetData()
   end, L.OPT_LANGUAGE_TIP)
+  AddNote(api, layout, L.OPT_LANGUAGE_NOTE)
 
   AddHeader(layout, L.OPT_SECTION_DK)
   for _, item in ipairs({
@@ -116,6 +132,7 @@ function Options.Register()
     end
     return container:GetData()
   end, L.OPT_SOUND_CHOICE_TIP)
+  AddNote(api, layout, L.OPT_SOUND_CHOICE_NOTE)
 
   api.CreateDropdown(category, Proxy(api, VarType.String, "soundChannel", L.OPT_SOUND_CHANNEL), function()
     local container = api.CreateControlTextContainer()

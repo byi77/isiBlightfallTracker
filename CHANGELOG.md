@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-02 - Version 0.7.10
+
+### Added
+- Options page: a note under the language choice says that the window switches at once
+  and the options page itself needs a /reload.
+- Options page: a note under the sound choice explains where own sounds go - into a
+  SharedMedia addon (for example `Interface\AddOns\SharedMedia_MyMedia\sound\`),
+  registered there; new files need a game restart.
+
 ## 2026-10-19 - Version 0.7.9
 
 ### Added

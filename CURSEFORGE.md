@@ -10,7 +10,12 @@ Works in the open world, dungeons, **Mythic+** and raids. No setup, no typing: i
 
 ---
 
-## What's new in 0.7.9
+## What's new in 0.7.10
+
+- **Language note:** the options page now says under the language choice that the window switches at once and the options page itself after a /reload.
+- **Own sounds:** a note under the sound choice explains where to put your own sound files (a SharedMedia addon such as `Interface\AddOns\SharedMedia_MyMedia\sound\`) so they appear in the list.
+
+## Previous update: 0.7.9
 
 - **Off without Blightfall:** on an Unholy build without the Blightfall talent (for example a solo build) the tracker stays off - no window, no voice cue - and comes back by itself when you talent it again.
 - `/ibt` tells you when the tracker is off because Blightfall is not talented.
@@ -131,7 +136,7 @@ Open **Esc > Options > AddOns > isiBlightfallTracker** (or type `/ibt options`).
 | Window | show only in combat · show only when Blightfall is ready (from Dark Transformation until you cast it) · lock · border · size (50-200 %) · background transparency (0-100 %) · reset position |
 | Log | record a local log (default: off) |
 
-The cue follows the volume slider of the chosen channel in the game's sound settings. A size change keeps the window's left edge in place. Above 50 % background transparency all text gets an outline, so it stays readable over the game world.
+Own sounds appear in the list once a SharedMedia addon registers them (for example put the file into `Interface\AddOns\SharedMedia_MyMedia\sound\` and register it there; new files need a game restart). The cue follows the volume slider of the chosen channel in the game's sound settings. A size change keeps the window's left edge in place. Above 50 % background transparency all text gets an outline, so it stays readable over the game world.
 
 ## Commands (optional)
 

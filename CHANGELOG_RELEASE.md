@@ -1,5 +1,4 @@
-## isiBlightfallTracker 0.7.9
+## isiBlightfallTracker 0.7.10
 
-- **Off without Blightfall:** on an Unholy build without the Blightfall talent the tracker stays off (no window, no voice cue) and comes back by itself when you talent it again. No more switching it off by hand for solo builds.
-- `/ibt` tells you when the tracker is off because Blightfall is not talented.
-- The Death Knight helpers keep working independently of the talent.
+- **Language note:** the options page now says under the language choice that the window switches at once and the options page itself after a /reload.
+- **Own sounds:** a note under the sound choice explains where to put your own sound files (a SharedMedia addon such as `Interface\AddOns\SharedMedia_MyMedia\sound\`) so they appear in the list.

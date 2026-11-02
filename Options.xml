@@ -1,0 +1,17 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <!-- Plain note line on the options page (see AddNote in Options.lua). -->
+  <Frame name="isiBlightfallTrackerNoteTemplate" virtual="true">
+    <Size y="34"/>
+    <Layers>
+      <Layer level="OVERLAY">
+        <FontString parentKey="Text" inherits="GameFontHighlightSmall" justifyH="LEFT" justifyV="TOP" wordwrap="true">
+          <Anchors>
+            <Anchor point="TOPLEFT" x="37" y="-2"/>
+            <Anchor point="BOTTOMRIGHT" x="-20" y="2"/>
+          </Anchors>
+          <Color r="0.7" g="0.7" b="0.7"/>
+        </FontString>
+      </Layer>
+    </Layers>
+  </Frame>
+</Ui>

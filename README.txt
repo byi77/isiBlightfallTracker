@@ -1,7 +1,7 @@
 isiBlightfallTracker
 ====================
 
-Current version: 0.7.9 (2026-10-19).
+Current version: 0.7.10 (2026-11-02).
 
 Unholy Death Knight helper for Blightfall (German client: "Seuchensturz").
 Shows the expected Blightfall damage, tells you when to press it, and keeps
@@ -165,6 +165,10 @@ Options page: Esc > Options > AddOns > isiBlightfallTracker (or /ibt options)
     Sound:        the voice "Go! Go!" (default), built-in game sounds
                   (raid warning, ready check, alarm clock, boss whisper),
                   or any sound of an installed shared-media sound pack
+                  Own sounds: put the .ogg/.mp3 into a SharedMedia addon
+                  (e.g. Interface\AddOns\SharedMedia_MyMedia\sound\)
+                  and register it there; new files need a game restart.
+                  The options page shows this note under the sound list.
     Channel:      Master (default), Effects, Dialog, Ambience, Music -
                   the cue follows that channel's volume slider
   Window          show only in combat, show only when Blightfall is
@@ -203,7 +207,8 @@ Values the game hides are never stored. The log stays on your computer in
 By default the texts follow the game client: German client - German,
 every other client - English. The options page lets you pick English or
 German yourself; the window and the chat messages switch at once, the
-options page itself after the next /reload. The damage estimate reads
+options page itself after the next /reload (a note under the language
+choice says so). The damage estimate reads
 German and English plague tooltips (this depends on the game client, not
 on the chosen language); on other client languages the window shows
 "estimate off" and only the timing signal works.
@@ -264,7 +269,8 @@ in großen Packs nicht.
 
 Einstellungen: Esc > Optionen > AddOns > isiBlightfallTracker (oder
 /ibt optionen): Sprache (automatisch, English, Deutsch), Ansage an/aus, Sound (Sprache, Spielsounds oder Sounds aus
-einem Shared-Media-Soundpaket), Soundkanal (Standard Master), Testsound;
+einem Shared-Media-Soundpaket; eigene Sounds in ein SharedMedia-Addon
+legen und dort registrieren, Hinweis unter der Soundauswahl), Soundkanal (Standard Master), Testsound;
 Fenster nur im Kampf, nur wenn Seuchensturz bereit (ab Dunkler
 Verwandlung bis zum Zünden), sperren, Rahmen, Größe, Hintergrund-
 Transparenz, Position zurücksetzen; Log (Standard aus). Beim Ändern der

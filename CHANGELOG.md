@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-20 - Version 0.7.11
+
+### Changed
+- Internal audit.
+
 ## 2026-11-02 - Version 0.7.10
 
 ### Added

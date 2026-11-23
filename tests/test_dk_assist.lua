@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global
+-- Runs in standalone Lua (io, os, loadfile), not in the WoW client.
 -- Run the retained helper scenarios against their new standalone owner.
 local dir = arg[1]
 local Assert = assert(loadfile(dir .. "/tests/dk_assert.lua"))()

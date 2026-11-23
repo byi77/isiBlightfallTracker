@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global
+-- Runs in standalone Lua (io, os, loadfile), not in the WoW client.
 local dir, stub = arg[1], arg[2]
 local function check(cond, message) assert(cond, message); io.write("PASS " .. message .. "\n") end
 local timers, mutes, unmutes, drivers = {}, {}, {}, {}
